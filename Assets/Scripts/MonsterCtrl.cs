@@ -6,7 +6,8 @@ using UnityEngine.UI;
 public enum MonType
 {
     bunny,
-    dog
+    dog,
+    Mushroom
 }
 public class MonsterCtrl : MonoBehaviour
 {
@@ -18,11 +19,11 @@ public class MonsterCtrl : MonoBehaviour
     public Transform PlayerTr;
     public Animator anim;
 
-    public float speed = 5;
+    public float speed = 7;
     private float m_Hp = 100;
     float m_CurHp = 100;
 
-    public int nextMove = 1;
+    public int nextMove;
     public float distance;
     Vector3 startPos;
     float curtime = 0;
@@ -37,7 +38,7 @@ public class MonsterCtrl : MonoBehaviour
 
     void Awake()
     {
-
+        Invoke("Think", 5);
     }
     // Start is called before the first frame update
     void Start()
@@ -49,7 +50,7 @@ public class MonsterCtrl : MonoBehaviour
         PlayerTr = GetComponent<Transform>();
         anim = GetComponent<Animator>();
 
-        startPos = transform.position;
+       
     }
 
     // Update is called once per frame
@@ -58,16 +59,51 @@ public class MonsterCtrl : MonoBehaviour
         if (!isDie)
         {
             if (m_MonType == MonType.bunny)
-            {
                 bunny_AI();
-            }
 
             if (m_MonType == MonType.dog)
-            {
                 dog_AI();
-            }
+
+            if (m_MonType == MonType.Mushroom)
+                mushroom_AI();
+
         }
     }
+
+    void mushroom_AI()
+    {
+        //Move
+        rigid.velocity = new Vector2(nextMove, rigid.velocity.y);
+
+        //Platform Check
+        Vector2 frontVec = new Vector2(rigid.position.x + nextMove * 0.7f, rigid.position.y);
+        Debug.DrawRay(frontVec, Vector2.down, new Color(0, 1, 0));
+        RaycastHit2D rayHit = Physics2D.Raycast(frontVec, Vector2.down, 1f, LayerMask.GetMask("Platform"));
+        if(rayHit.collider == null)
+        {
+            nextMove *= -1;
+            sprite.flipX = nextMove == 1;
+            CancelInvoke(); //현재 작동 중인 모든 Invoke 함수를 멈춤
+            Invoke("Think", 2);
+        }
+    }
+    void Think()
+    {
+        //Set Next Active
+        nextMove = Random.Range(-1, 2);
+       
+        //Animation
+        anim.SetInteger("WalkSpeed", nextMove);
+
+        //Flip Sprite
+        if (nextMove != 0)
+            sprite.flipX = nextMove == 1;   //오른쪽으로 가면 flipx =true
+        
+        //Set Next Active
+        float nextThinkTime = Random.Range(2f, 5f);
+        Invoke("Think", nextThinkTime);
+    }
+
 
     void bunny_AI()
     {
@@ -111,6 +147,8 @@ public class MonsterCtrl : MonoBehaviour
             anim.SetBool("DogRunning", false);     
     }
 
+    
+
     void OnCollisionEnter2D(Collision2D coll)
     {
         if(coll.gameObject.tag =="P_Bullet")
@@ -124,7 +162,7 @@ public class MonsterCtrl : MonoBehaviour
         if (m_HpBarObj != null)
             m_HpBarObj.SetActive(true);
 
-        m_curHp -= 50;
+        m_curHp -= 20;
 
         if (m_hpBarImg != null)
             m_hpBarImg.fillAmount = m_curHp / m_Hp;
@@ -133,20 +171,33 @@ public class MonsterCtrl : MonoBehaviour
         {
             m_curHp = 0;
             m_HpBarObj.SetActive(false);
-            isDie = true;
-            anim.SetTrigger("Death");
-            Destroy(gameObject, 0.3f);
+            MonsterDie();          
         }
 
         OnMonDamaged(PlayerTr.transform.position);
 
     }
 
+    void MonsterDie()
+    {
+        isDie = true;
+        
+        anim.SetTrigger("Death");
+        Destroy(gameObject, 0.3f);
+
+        if(GameMgr.Inst.m_CoinItem != null)
+        {
+            GameObject a_CoinObj = Instantiate(GameMgr.Inst.m_CoinItem) as GameObject;
+            a_CoinObj.transform.position = this.transform.position;
+            
+        }
+    }
+
     void OnMonDamaged(Vector2 targetPos)
     {
         gameObject.layer = 9;
-        sprite.color = new Color(1, 1, 1, 0.4f);
-        Invoke("OffDamaged", 0.2f);
+        sprite.color = new Color(0, 0, 0, 0.4f);
+        Invoke("OffDamaged", 0.1f);
     }
 
     void OffDamaged()

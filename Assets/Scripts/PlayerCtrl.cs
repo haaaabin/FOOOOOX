@@ -22,6 +22,7 @@ public class PlayerCtrl : MonoBehaviour
     private Rigidbody2D rigid;
     private Animator anim;
     private CapsuleCollider2D coll;
+    private SpriteRenderer sprite;
 
     public GameObject m_BulletObj = null;
     public GameObject m_shootPos = null;
@@ -31,20 +32,24 @@ public class PlayerCtrl : MonoBehaviour
     float m_HP = 1000;
     float m_curHP = 1000;
 
+    LayerMask playerState;
 
     // Start is called before the first frame update
     void Start()
     {
+        Time.timeScale = 1;
+
         rigid = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         coll = GetComponent<CapsuleCollider2D>();
+        sprite = GetComponent<SpriteRenderer>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (transform.position.x < -8.3f)
-            transform.position = new Vector2(-8.3f, transform.position.y);
+        if (transform.position.x < -10f)
+            transform.position = new Vector2(-10f, transform.position.y);
 
         //ÁÂ¿ìÀÌµ¿
         dirX = Input.GetAxis("Horizontal");
@@ -93,11 +98,11 @@ public class PlayerCtrl : MonoBehaviour
             anim.SetInteger("state", 0);
         }
 
-        if (rigid.velocity.y > .1f)
+        if (rigid.velocity.y > 0.1f)
         {
             anim.SetInteger("state", 2);
         }
-        else if (rigid.velocity.y < -.1f)
+        else if(rigid.velocity.y < 0)
         {
             anim.SetInteger("state", 3);
         }
@@ -109,7 +114,56 @@ public class PlayerCtrl : MonoBehaviour
 
     }
 
+    void OnCollisionEnter2D(Collision2D coll)
+    {
+        if (coll.gameObject.tag == "Monster")
+        {
+            PlayerTakeDemaged();
+            OnDamaged(coll.transform.position);
+        }
+    }
+
+    void OnTriggerEnter2D(Collider2D coll)
+    {
+        if(coll.gameObject.name.Contains("Coin"))
+        {
+            GameMgr.Inst.AddGold();
+            Destroy(coll.gameObject);
+        }
+    }
     void PlayerTakeDemaged()
+    {
+        m_curHP -= 100;
+
+        if (m_HpBarImg != null)
+            m_HpBarImg.fillAmount = m_curHP / m_HP;
+
+        if(m_curHP <=0)
+        {
+            m_curHP = 0;
+            PlayerDie();
+        }
+    }
+
+
+
+    void OnDamaged(Vector2 targetPos)
+    {
+        playerState = 1 << 10;
+        sprite.color = new Color(1, 1, 1, 0.4f);
+
+        int dirc = transform.position.x - targetPos.x > 0 ? 1 : -1;
+        rigid.AddForce(new Vector2(dirc, 1f) * 5, ForceMode2D.Impulse);
+        Invoke("OffDamaged", 2);
+    }
+
+    void OffDamaged()
+    {
+        playerState = 1 << 9;
+        sprite.color = new Color(1, 1, 1, 1);
+    }
+
+    void PlayerDie()
     {
 
     }
