@@ -19,7 +19,7 @@ public class GameMgr : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        m_CoinItem = Resources.Load("Coin") as GameObject;
+        m_CoinItem = Resources.Load("Prafab/Coin") as GameObject;
     }
 
     // Update is called once per frame

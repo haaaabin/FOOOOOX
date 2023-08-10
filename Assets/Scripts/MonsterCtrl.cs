@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 public enum MonType
 {
-    bunny,
     Mushroom,
     plant,
     Rock,
@@ -13,7 +12,6 @@ public enum MonType
 }
 public class MonsterCtrl : MonoBehaviour
 {
-
     public MonType m_MonType = MonType.Mushroom;
 
     Rigidbody2D rigid;
@@ -21,12 +19,11 @@ public class MonsterCtrl : MonoBehaviour
     Animator anim;
     public Transform PlayerTr;
 
-    public float speed = 7;
-    private float m_Hp = 100;
-    private float m_CurHp = 100;
+    public float speed = 3;
+    float m_Hp = 100;
+    float m_CurHp = 100;
 
     public int nextMove;
-    public float distance;
 
     float shootTime = 0;
     float shootDelay = 1f;
@@ -50,6 +47,13 @@ public class MonsterCtrl : MonoBehaviour
     {
         if(m_MonType == MonType.Mushroom)
             Invoke("Think", 5);
+
+        if(m_MonType == MonType.MiniRock)
+        {
+            m_Hp = 20;
+            m_curHp = m_Hp;
+        }
+
     }
 
     // Start is called before the first frame update
@@ -61,6 +65,7 @@ public class MonsterCtrl : MonoBehaviour
         sprite = GetComponentInChildren<SpriteRenderer>();
         anim = GetComponent<Animator>();
         PlayerTr = GetComponent<Transform>();
+
     }
 
     // Update is called once per frame
@@ -68,21 +73,21 @@ public class MonsterCtrl : MonoBehaviour
     {
         if (!isDie)
         {
-            if (m_MonType == MonType.bunny)
-                bunny_AI();
-
             if (m_MonType == MonType.Mushroom)
-                mushroom_AI();
+                Mushroom_AI();
 
             if (m_MonType == MonType.plant)
-                plant_AI();
+                Plant_AI();
 
             if (m_MonType == MonType.Rock)
-                rock_AI();
+                Rock_AI();
+
+            if (m_MonType == MonType.MiniRock)
+                miniRock_AI();
         }
     }
 
-    void mushroom_AI()
+    void Mushroom_AI()
     {
         //Move
         rigid.velocity = new Vector2(nextMove, rigid.velocity.y);
@@ -116,7 +121,7 @@ public class MonsterCtrl : MonoBehaviour
         Invoke("Think", nextThinkTime);
     }
 
-    void plant_AI()
+    void Plant_AI()
     {
         Debug.DrawRay(transform.position, Vector3.left, new Color(0, 1, 0));
         Debug.DrawRay(transform.position, Vector3.right, new Color(0, 1, 0));
@@ -180,9 +185,9 @@ public class MonsterCtrl : MonoBehaviour
         }
     }
 
-    void rock_AI()
+    void Rock_AI()
     {
-        rigid.velocity = new Vector2(turn * 3f, rigid.velocity.y);
+        rigid.velocity = new Vector2(turn * speed, rigid.velocity.y);
 
         Vector2 frontVec = new Vector2(rigid.position.x + turn, rigid.position.y - 0.7f);
         Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
@@ -193,23 +198,21 @@ public class MonsterCtrl : MonoBehaviour
         }
         if (turn != 0)
             sprite.flipX = turn == 1;
-
     }
-    void bunny_AI()
-    {
-        rigid.velocity = new Vector2(nextMove * 3f, rigid.velocity.y);
 
-        Vector2 frontVec = new Vector2(rigid.position.x + nextMove * 0.7f, rigid.position.y - 0.5f);
+    void miniRock_AI()
+    {
+        rigid.velocity = new Vector2(turn * speed, rigid.velocity.y);
+
+        Vector2 frontVec = new Vector2(rigid.position.x + turn, rigid.position.y - 0.5f);
         Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
-        RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1f, LayerMask.GetMask("Platform"));
+        RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 0.5f, LayerMask.GetMask("Platform"));
         if (rayGHit.collider == null)
         {
-            nextMove *= -1;
+            turn *= -1;
         }
-        if (nextMove == 1)
-            sprite.flipX = false;
-        else if (nextMove == -1)
-            sprite.flipX = true;
+        if (turn != 0)
+            sprite.flipX = turn == 1;
     }
 
     void OnCollisionEnter2D(Collision2D coll)
@@ -217,37 +220,40 @@ public class MonsterCtrl : MonoBehaviour
         if(coll.gameObject.tag =="P_Bullet")
         {
             Destroy(coll.gameObject);
-            TakeDemaged();
+            TakeDemaged(20);
         }
     }
-    public void TakeDemaged()
+    public void TakeDemaged(float a_Value)
     {
+        anim.SetTrigger("Hit");
+
         if (m_HpBarObj != null)
             m_HpBarObj.SetActive(true);
 
-        m_curHp -= 20;
+        m_curHp -= a_Value;
 
         if (m_hpBarImg != null)
             m_hpBarImg.fillAmount = m_curHp / m_Hp;
-
-        anim.SetTrigger("Hit");
 
         if (m_curHp <= 0)
         {
             m_curHp = 0;
             m_HpBarObj.SetActive(false);
-            MonsterDie();          
+            MonsterDie();       
+            
+            if(m_MonType ==MonType.MiniRock)
+            {
+                isDie = true;
+                Destroy(gameObject, 0.3f);
+            }
         }
-
-        //OnMonDamaged();
 
     }
 
     void MonsterDie()
     {
         isDie = true;
-        
-        Destroy(gameObject, 0.4f);
+        Destroy(gameObject, 0.3f);
 
         if(GameMgr.Inst.m_CoinItem != null)
         {
