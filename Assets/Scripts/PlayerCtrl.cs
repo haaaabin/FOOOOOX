@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public enum MovementState
@@ -34,6 +35,8 @@ public class PlayerCtrl : MonoBehaviour
 
     LayerMask playerState;
 
+    bool isDie = false;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -43,44 +46,55 @@ public class PlayerCtrl : MonoBehaviour
         anim = GetComponent<Animator>();
         coll = GetComponent<CapsuleCollider2D>();
         sprite = GetComponent<SpriteRenderer>();
+
+        isDie = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (transform.position.x < -10f)
-            transform.position = new Vector2(-10f, transform.position.y);
-
-        //좌우이동
-        dirX = Input.GetAxis("Horizontal");
-        transform.Translate(dirX * Time.deltaTime * moveSpeed, 0, 0);
-        
-        //점프
-        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
+        if (!isDie)
         {
-            rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
-            //jumpcnt++;    
-        }
 
-        //총알 발사
-        if (Input.GetKeyDown(KeyCode.Z))
-        {
-            if (m_BulletObj == null)
-                return;
+            //좌우이동
+            dirX = Input.GetAxis("Horizontal");
+            transform.Translate(dirX * Time.deltaTime * moveSpeed, 0, 0);
 
-            GameObject a_BullObj = Instantiate(m_BulletObj) as GameObject;
-            BulletCtrl a_Bullet = a_BullObj.GetComponent<BulletCtrl>();
-            a_Bullet.BulletSpawn(m_shootPos.transform.position, Vector3.right, BulletSpeed);
-            
-            if(transform.localScale.x == -1)
+            //점프
+            if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
             {
-                a_Bullet.BulletSpawn(m_shootPos.transform.position, Vector3.left, BulletSpeed);
+                rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
+                //jumpcnt++;    
             }
-         
+
+            //총알 발사
+            if (Input.GetKeyDown(KeyCode.Z))
+            {
+                if (m_BulletObj == null)
+                    return;
+
+                GameObject a_BullObj = Instantiate(m_BulletObj) as GameObject;
+                BulletCtrl a_Bullet = a_BullObj.GetComponent<BulletCtrl>();
+                a_Bullet.BulletSpawn(m_shootPos.transform.position, Vector3.right, BulletSpeed);
+
+                if (transform.localScale.x == -1)
+                {
+                    a_Bullet.BulletSpawn(m_shootPos.transform.position, Vector3.left, BulletSpeed);
+                }
+
+            }
+            UpdateAnimState();
         }
-        UpdateAnimState();
+        LimitMove();
     }
 
+    void LimitMove()
+    {
+        if(transform.position.x < -11.0f)
+        {
+            transform.position = new Vector2(-11.0f, transform.position.y);
+        }
+    }
     void UpdateAnimState()
     {
         if (dirX > 0)   //오른쪽
@@ -102,7 +116,7 @@ public class PlayerCtrl : MonoBehaviour
         {
             anim.SetInteger("state", 2);
         }
-        else if(rigid.velocity.y < 0)
+        else if(rigid.velocity.y < -0.1f)
         {
             anim.SetInteger("state", 3);
         }
@@ -131,6 +145,7 @@ public class PlayerCtrl : MonoBehaviour
             Destroy(coll.gameObject);
         }
     }
+
     void PlayerTakeDemaged()
     {
         m_curHP -= 100;
@@ -154,7 +169,7 @@ public class PlayerCtrl : MonoBehaviour
 
         int dirc = transform.position.x - targetPos.x > 0 ? 1 : -1;
         rigid.AddForce(new Vector2(dirc, 1f) * 5, ForceMode2D.Impulse);
-        Invoke("OffDamaged", 2);
+        Invoke("OffDamaged", 1);
     }
 
     void OffDamaged()
@@ -165,6 +180,8 @@ public class PlayerCtrl : MonoBehaviour
 
     void PlayerDie()
     {
-
+        isDie = true;
+        anim.SetTrigger("Die");
+       // SceneManager.LoadScene("SampleScene")
     }
 }
