@@ -35,8 +35,6 @@ public class PlayerCtrl : MonoBehaviour
 
     LayerMask playerState;
 
-    float jumpcnt = 0;
-
     bool isDie = false;
 
     // Start is called before the first frame update
@@ -61,13 +59,10 @@ public class PlayerCtrl : MonoBehaviour
             dirX = Input.GetAxis("Horizontal");
             transform.Translate(dirX * Time.deltaTime * moveSpeed, 0, 0);
 
-            PlatformCheck();
             //점프
-            if (Input.GetKeyDown(KeyCode.Space) && jumpcnt < 2)
+            if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
             {
                 rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
-
-                jumpcnt++;    
             }
 
             //총알 발사
@@ -98,13 +93,10 @@ public class PlayerCtrl : MonoBehaviour
             transform.position = new Vector2(-11.0f, transform.position.y);
         }
     }
-    void PlatformCheck()
+    private bool IsGrounded()
     {
-        RaycastHit2D rayHit = Physics2D.Raycast(rigid.position, Vector3.down, 1, LayerMask.GetMask("Platform"));
-        if (rayHit.collider != null)
-        {
-            jumpcnt = 0;
-        }
+        //플레이어로부터 Vector2.down 방향으로 Ray를 쏘아서 Raycast의 충돌로써 땅 위에 있는지를 판정
+        return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, .1f, LayerMask.GetMask("Platform"));
     }
 
     void UpdateAnimState()

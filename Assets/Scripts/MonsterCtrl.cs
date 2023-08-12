@@ -7,10 +7,10 @@ public enum MonType
 {
     Walk_Monster,
     Run_Monster,
-    Mushroom,
     plant,
-    Rock,
-    MiniRock
+    MiniRock,
+    Fly_Monster,
+    WalkJumpMonster
 }
 public class MonsterCtrl : MonoBehaviour
 {
@@ -47,7 +47,7 @@ public class MonsterCtrl : MonoBehaviour
 
     void Awake()
     {
-
+        Invoke("Think", 3);
     }
 
     // Start is called before the first frame update
@@ -56,9 +56,10 @@ public class MonsterCtrl : MonoBehaviour
         isDie = false;
 
         rigid = GetComponent<Rigidbody2D>();
-        sprite = GetComponentInChildren<SpriteRenderer>();
+        sprite = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
         PlayerTr = GetComponent<Transform>();
+
 
     }
 
@@ -73,6 +74,10 @@ public class MonsterCtrl : MonoBehaviour
                 RunMonster_AI();
             if (m_MonType == MonType.plant)
                 Plant_AI();
+            if (m_MonType == MonType.Fly_Monster)
+                FlyMonster_AI();
+            if (m_MonType == MonType.WalkJumpMonster)
+                WalkJumpMonster_AI();
         }
     }
 
@@ -82,7 +87,7 @@ public class MonsterCtrl : MonoBehaviour
 
         Vector2 frontVec = new Vector2(rigid.position.x + turn * 0.8f, rigid.position.y - 0.8f);
         Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
-        RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 0.5f, LayerMask.GetMask("Platform"));
+        RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1, LayerMask.GetMask("Platform"));
         if (rayGHit.collider == null)
         {
             turn *= -1;
@@ -137,7 +142,6 @@ public class MonsterCtrl : MonoBehaviour
         }
     }
 
-     
     void RunMonster_AI()
     {
         rigid.velocity = new Vector2(turn * RunSpeed, rigid.velocity.y);
@@ -151,6 +155,38 @@ public class MonsterCtrl : MonoBehaviour
         }
         if (turn != 0)
             sprite.flipX = turn == 1;
+    }
+
+    void FlyMonster_AI()
+    {
+
+    }
+
+    void WalkJumpMonster_AI()
+    {
+        rigid.velocity = new Vector2(nextMove * 2f, rigid.velocity.y);
+
+        Vector2 frontVec = new Vector2(rigid.position.x + nextMove * 0.8f, rigid.position.y - 0.8f);
+        Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
+        RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1, LayerMask.GetMask("Platform"));
+        if (rayGHit.collider == null)
+        {
+            nextMove *= -1;
+            CancelInvoke();
+            Invoke("Think", 3);
+        }
+        
+    }
+
+    void Think()
+    {
+        nextMove = Random.Range(-1, 2);
+
+        anim.SetInteger("WalkSpeed", nextMove);
+        if (nextMove != 0)
+            sprite.flipX = nextMove == 1;
+
+        Invoke("Think", 3);
     }
 
     void OnCollisionEnter2D(Collision2D coll)
