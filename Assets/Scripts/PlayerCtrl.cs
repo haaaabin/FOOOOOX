@@ -18,7 +18,7 @@ public class PlayerCtrl : MonoBehaviour
 
     private float dirX = 0.0f;
     public float moveSpeed = 5.0f;
-    public float jumpPower = 10.0f;
+    public float jumpPower = 7.0f;
 
     private Rigidbody2D rigid;
     private Animator anim;
@@ -34,6 +34,8 @@ public class PlayerCtrl : MonoBehaviour
     float m_curHP = 1000;
 
     LayerMask playerState;
+
+    float jumpcnt = 0;
 
     bool isDie = false;
 
@@ -54,17 +56,18 @@ public class PlayerCtrl : MonoBehaviour
     void Update()
     {
         if (!isDie)
-        {
-
+        { 
             //좌우이동
             dirX = Input.GetAxis("Horizontal");
             transform.Translate(dirX * Time.deltaTime * moveSpeed, 0, 0);
 
+            PlatformCheck();
             //점프
-            if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
+            if (Input.GetKeyDown(KeyCode.Space) && jumpcnt < 2)
             {
                 rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
-                //jumpcnt++;    
+
+                jumpcnt++;    
             }
 
             //총알 발사
@@ -95,6 +98,15 @@ public class PlayerCtrl : MonoBehaviour
             transform.position = new Vector2(-11.0f, transform.position.y);
         }
     }
+    void PlatformCheck()
+    {
+        RaycastHit2D rayHit = Physics2D.Raycast(rigid.position, Vector3.down, 1, LayerMask.GetMask("Platform"));
+        if (rayHit.collider != null)
+        {
+            jumpcnt = 0;
+        }
+    }
+
     void UpdateAnimState()
     {
         if (dirX > 0)   //오른쪽
@@ -116,22 +128,24 @@ public class PlayerCtrl : MonoBehaviour
         {
             anim.SetInteger("state", 2);
         }
-        else if(rigid.velocity.y < -0.1f)
+        else if (rigid.velocity.y < -0.1f)
         {
             anim.SetInteger("state", 3);
         }
     }
 
-    bool IsGrounded()
-    {
-        return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, .1f, LayerMask.GetMask("Platform"));
-
-    }
+ 
 
     void OnCollisionEnter2D(Collision2D coll)
     {
         if (coll.gameObject.tag == "Monster")
         {
+            PlayerTakeDemaged();
+            OnDamaged(coll.transform.position);
+        }
+        if(coll.gameObject.tag == "M_Bullet")
+        {
+            Destroy(coll.gameObject);
             PlayerTakeDemaged();
             OnDamaged(coll.transform.position);
         }
@@ -168,7 +182,7 @@ public class PlayerCtrl : MonoBehaviour
         sprite.color = new Color(1, 1, 1, 0.4f);
 
         int dirc = transform.position.x - targetPos.x > 0 ? 1 : -1;
-        rigid.AddForce(new Vector2(dirc, 1f) * 5, ForceMode2D.Impulse);
+        rigid.AddForce(new Vector2(dirc, 1f) * 2, ForceMode2D.Impulse);
         Invoke("OffDamaged", 1);
     }
 

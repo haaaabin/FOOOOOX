@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public enum MonType
 {
+    Walk_Monster,
+    Run_Monster,
     Mushroom,
     plant,
     Rock,
@@ -12,21 +14,22 @@ public enum MonType
 }
 public class MonsterCtrl : MonoBehaviour
 {
-    public MonType m_MonType = MonType.Mushroom;
+    public MonType m_MonType = MonType.Walk_Monster;
 
     Rigidbody2D rigid;
     SpriteRenderer sprite;
     Animator anim;
     public Transform PlayerTr;
 
-    public float speed = 3;
+    public float MoveSpeed = 2;
+    float RunSpeed = 5;
     float m_Hp = 100;
     float m_CurHp = 100;
 
     public int nextMove;
 
     float shootTime = 0;
-    float shootDelay = 1f;
+    float shootDelay = 0.9f;
 
     bool isDie = false;
 
@@ -39,20 +42,11 @@ public class MonsterCtrl : MonoBehaviour
     public GameObject m_MonBullet = null;
     public GameObject m_shootPos = null;
     public float Bulletspeed = 10f;
-    float attackDist = 7f;
 
     float turn = 1;
 
     void Awake()
     {
-        if(m_MonType == MonType.Mushroom)
-            Invoke("Think", 5);
-
-        if(m_MonType == MonType.MiniRock)
-        {
-            m_Hp = 20;
-            m_curHp = m_Hp;
-        }
 
     }
 
@@ -73,72 +67,40 @@ public class MonsterCtrl : MonoBehaviour
     {
         if (!isDie)
         {
-            if (m_MonType == MonType.Mushroom)
-                Mushroom_AI();
-
+            if (m_MonType == MonType.Walk_Monster)
+                WalkMonster_AI();
+            if (m_MonType == MonType.Run_Monster)
+                RunMonster_AI();
             if (m_MonType == MonType.plant)
                 Plant_AI();
-
-            if (m_MonType == MonType.Rock)
-                Rock_AI();
-
-            if (m_MonType == MonType.MiniRock)
-                miniRock_AI();
         }
     }
 
-    void Mushroom_AI()
+    void WalkMonster_AI()
     {
-        //Move
-        rigid.velocity = new Vector2(nextMove, rigid.velocity.y);
+        rigid.velocity = new Vector2(turn, rigid.velocity.y);
 
-        //Platform Check
-        Vector2 frontVec = new Vector2(rigid.position.x + nextMove, rigid.position.y - 0.8f);
-        Debug.DrawRay(frontVec, Vector2.down, new Color(0, 1, 0));
-        RaycastHit2D rayHit = Physics2D.Raycast(frontVec, Vector2.down, 0.5f, LayerMask.GetMask("Platform"));
-        if(rayHit.collider == null)
+        Vector2 frontVec = new Vector2(rigid.position.x + turn * 0.8f, rigid.position.y - 0.8f);
+        Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
+        RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 0.5f, LayerMask.GetMask("Platform"));
+        if (rayGHit.collider == null)
         {
-            nextMove *= -1;
-            sprite.flipX = nextMove == 1;
-            CancelInvoke(); //현재 작동 중인 모든 Invoke 함수를 멈춤
-            Invoke("Think", 2);
+            turn *= -1;
         }
-    }
-    void Think()
-    {
-        //Set Next Active
-        nextMove = Random.Range(-1, 2);
-       
-        //Animation
-        anim.SetInteger("WalkSpeed", nextMove);
-
-        //Flip Sprite
-        if (nextMove != 0)
-            sprite.flipX = nextMove == 1;   //오른쪽으로 가면 flipx =true
-        
-        //Set Next Active
-        float nextThinkTime = Random.Range(2f, 5f);
-        Invoke("Think", nextThinkTime);
+        if (turn != 0)
+            sprite.flipX = turn == 1;
     }
 
     void Plant_AI()
     {
-        Debug.DrawRay(transform.position, Vector3.left, new Color(0, 1, 0));
-        Debug.DrawRay(transform.position, Vector3.right, new Color(0, 1, 0));
+        Collider2D a_Coll = Physics2D.OverlapBox(transform.position, new Vector2(14, 14), 0, LayerMask.GetMask("Player"));
 
-        RaycastHit2D rayLHit = Physics2D.Raycast(transform.position, Vector3.left, 10, LayerMask.GetMask("Player"));
-        RaycastHit2D rayRHit = Physics2D.Raycast(transform.position, Vector3.right, 10, LayerMask.GetMask("Player"));
-
-        if (rayLHit.collider != null)
+        if(a_Coll != null)
         {
-            transform.localScale = new Vector3(1, 1, 1);
-
-            Debug.Log(rayLHit.collider.name);
-            float distance = Vector2.Distance(transform.position, rayLHit.collider.transform.position);
-            if (distance < attackDist)
+            if(a_Coll.transform.position.x < transform.position.x)  //Left
             {
                 anim.SetBool("Attack", true);
-
+                sprite.flipX = false;
                 shootTime += Time.deltaTime;
                 if (shootDelay <= shootTime)
                 {
@@ -151,21 +113,11 @@ public class MonsterCtrl : MonoBehaviour
                     shootTime = 0f;
                 }
             }
-            else
-            {
-                anim.SetBool("Attack", false);
-            }
-        }
-
-        else if (rayRHit.collider != null)
-        {
-            transform.localScale = new Vector3(-1, 1, 1);
-
-            float distance = Vector2.Distance(transform.position, rayRHit.collider.transform.position);
-            if (distance < attackDist)
+            else //Right
             {
                 anim.SetBool("Attack", true);
 
+                sprite.flipX = true;
                 shootTime += Time.deltaTime;
                 if (shootDelay <= shootTime)
                 {
@@ -177,34 +129,20 @@ public class MonsterCtrl : MonoBehaviour
                     }
                     shootTime = 0f;
                 }
-            }
-            else
-            {
-                anim.SetBool("Attack", false);
-            }
+            }   
+        }
+        else
+        {
+            anim.SetBool("Attack", false);
         }
     }
 
-    void Rock_AI()
+     
+    void RunMonster_AI()
     {
-        rigid.velocity = new Vector2(turn * speed, rigid.velocity.y);
+        rigid.velocity = new Vector2(turn * RunSpeed, rigid.velocity.y);
 
         Vector2 frontVec = new Vector2(rigid.position.x + turn, rigid.position.y - 0.7f);
-        Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
-        RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 0.5f, LayerMask.GetMask("Platform"));
-        if (rayGHit.collider == null)
-        {
-            turn *= -1;
-        }
-        if (turn != 0)
-            sprite.flipX = turn == 1;
-    }
-
-    void miniRock_AI()
-    {
-        rigid.velocity = new Vector2(turn * speed, rigid.velocity.y);
-
-        Vector2 frontVec = new Vector2(rigid.position.x + turn, rigid.position.y - 0.5f);
         Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
         RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 0.5f, LayerMask.GetMask("Platform"));
         if (rayGHit.collider == null)
@@ -223,6 +161,7 @@ public class MonsterCtrl : MonoBehaviour
             TakeDemaged(20);
         }
     }
+
     public void TakeDemaged(float a_Value)
     {
         anim.SetTrigger("Hit");
@@ -241,11 +180,6 @@ public class MonsterCtrl : MonoBehaviour
             m_HpBarObj.SetActive(false);
             MonsterDie();       
             
-            if(m_MonType ==MonType.MiniRock)
-            {
-                isDie = true;
-                Destroy(gameObject, 0.3f);
-            }
         }
 
     }
@@ -253,26 +187,20 @@ public class MonsterCtrl : MonoBehaviour
     void MonsterDie()
     {
         isDie = true;
+        anim.SetTrigger("Death");
         Destroy(gameObject, 0.3f);
 
-        if(GameMgr.Inst.m_CoinItem != null)
+        SpawnCoin();     
+    }
+
+    void SpawnCoin()
+    {
+        if (GameMgr.Inst.m_CoinItem != null)
         {
             GameObject a_CoinObj = Instantiate(GameMgr.Inst.m_CoinItem) as GameObject;
             a_CoinObj.transform.position = this.transform.position;
-            
+
         }
     }
 
-    void OnMonDamaged()
-    {
-        gameObject.layer = 9;
-        sprite.color = new Color(0, 0, 0, 0.4f);
-        Invoke("OffDamaged", 0.1f);
-    }
-
-    void OffDamaged()
-    {
-        gameObject.layer = 8;
-        sprite.color = new Color(1, 1, 1, 1);
-    }
 }

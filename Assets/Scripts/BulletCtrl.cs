@@ -11,7 +11,7 @@ public class BulletCtrl : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Destroy(gameObject, 2.0f);
+         Destroy(gameObject, 0.5f);
     }
 
     // Update is called once per frame
@@ -20,7 +20,7 @@ public class BulletCtrl : MonoBehaviour
         transform.position += m_DirVec * Time.deltaTime * m_MoveSpeed;
     }
 
-    public void BulletSpawn(Vector3 a_StPos, Vector3 a_DirVec, float a_Speed = 10.0f, float att = 15.0f)
+    public void BulletSpawn(Vector3 a_StPos, Vector3 a_DirVec, float a_Speed)
     {
         m_DirVec = a_DirVec;
         transform.position = new Vector3(a_StPos.x, a_StPos.y, 0.0f);
