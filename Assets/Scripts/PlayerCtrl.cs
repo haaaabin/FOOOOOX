@@ -50,6 +50,14 @@ public class PlayerCtrl : MonoBehaviour
         isDie = false;
     }
 
+    void FixedUpdate()
+    {
+        Vector2 Dir = new Vector2(transform.position.x, transform.position.y - 0.5f);
+        RaycastHit2D rayhit = Physics2D.BoxCast(Dir, new Vector2(1,1), 0, Vector2.down, LayerMask.GetMask("Platform"));
+        Debug.DrawRay(transform.position, Vector2.down);
+        if(rayhit.collider != null) { }
+ 
+    }
     // Update is called once per frame
     void Update()
     {
@@ -93,10 +101,10 @@ public class PlayerCtrl : MonoBehaviour
             transform.position = new Vector2(-11.0f, transform.position.y);
         }
     }
-    private bool IsGrounded()
+    bool IsGrounded()
     {
         //플레이어로부터 Vector2.down 방향으로 Ray를 쏘아서 Raycast의 충돌로써 땅 위에 있는지를 판정
-        return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, .1f, LayerMask.GetMask("Platform"));
+        return Physics2D.BoxCast(transform.position, new Vector2(1,1), 0f, Vector2.down, 1f, LayerMask.GetMask("Platform"));
     }
 
     void UpdateAnimState()

@@ -21,7 +21,7 @@ public class MonsterCtrl : MonoBehaviour
     Animator anim;
     public Transform PlayerTr;
 
-    public float MoveSpeed = 2;
+    public float MoveSpeed = 3;
     float RunSpeed = 5;
     float m_Hp = 100;
     float m_CurHp = 100;
