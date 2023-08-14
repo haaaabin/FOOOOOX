@@ -153,7 +153,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 2
   m_Sprite: {fileID: -6367560908665664636, guid: a6465882e447a7346b1d80709f6094be, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -237,7 +237,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_MonType: 0
   PlayerTr: {fileID: 0}
-  speed: 5
+  MoveSpeed: 3
   nextMove: 0
   m_HpBarObj: {fileID: 2814448814362766594}
   m_hpBarImg: {fileID: 2814448812434380920}

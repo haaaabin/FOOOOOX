@@ -52,10 +52,6 @@ public class PlayerCtrl : MonoBehaviour
 
     void FixedUpdate()
     {
-        Vector2 Dir = new Vector2(transform.position.x, transform.position.y - 0.5f);
-        RaycastHit2D rayhit = Physics2D.BoxCast(Dir, new Vector2(1,1), 0, Vector2.down, LayerMask.GetMask("Platform"));
-        Debug.DrawRay(transform.position, Vector2.down);
-        if(rayhit.collider != null) { }
  
     }
     // Update is called once per frame
