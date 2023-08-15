@@ -25,6 +25,7 @@ public class PlayerCtrl : MonoBehaviour
     private CapsuleCollider2D coll;
     private SpriteRenderer sprite;
 
+    //--- 총알 변수 ---
     public GameObject m_BulletObj = null;
     public GameObject m_shootPos = null;
     float BulletSpeed = 10.0f;
@@ -99,8 +100,11 @@ public class PlayerCtrl : MonoBehaviour
     }
     bool IsGrounded()
     {
+        Vector2 Dir = transform.position;
+        Dir.x = transform.position.x;
+        Dir.y = transform.position.y - 1.5f;
         //플레이어로부터 Vector2.down 방향으로 Ray를 쏘아서 Raycast의 충돌로써 땅 위에 있는지를 판정
-        return Physics2D.BoxCast(transform.position, new Vector2(1,1), 0f, Vector2.down, 1f, LayerMask.GetMask("Platform"));
+        return Physics2D.BoxCast(Dir, new Vector2(0.5f,0.5f), 0f, Vector2.down, 1f, LayerMask.GetMask("Platform"));
     }
 
     void UpdateAnimState()
