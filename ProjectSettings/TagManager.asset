@@ -8,6 +8,9 @@ TagManager:
   - P_Bullet
   - Platform
   - M_Bullet
+  - Snail
+  - Damagable
+  - Coin
   layers:
   - Default
   - TransparentFX

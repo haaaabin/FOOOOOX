@@ -7,7 +7,6 @@ public class BulletCtrl : MonoBehaviour
     Vector3 m_DirVec = Vector3.right;
     float m_MoveSpeed = 10.0f;
 
-    public LayerMask isLayer;
     // Start is called before the first frame update
     void Start()
     {
@@ -30,6 +29,8 @@ public class BulletCtrl : MonoBehaviour
     void OnCollisionEnter2D(Collision2D coll)
     {
         if (coll.gameObject.layer == LayerMask.NameToLayer("Platform"))
+        {
             Destroy(gameObject);
+        }
     }
 }

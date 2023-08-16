@@ -8,9 +8,8 @@ public enum MonType
     Walk_Monster,
     Run_Monster,
     plant,
-    MiniRock,
     Fly_Monster,
-    WalkJumpMonster
+    Snail
 }
 public class MonsterCtrl : MonoBehaviour
 {
@@ -19,7 +18,8 @@ public class MonsterCtrl : MonoBehaviour
     Rigidbody2D rigid;
     SpriteRenderer sprite;
     Animator anim;
-    public Transform PlayerTr;
+    public PlayerCtrl Player;
+    CapsuleCollider2D capcoll;
 
     public float MoveSpeed = 3;
     float RunSpeed = 5;
@@ -45,10 +45,7 @@ public class MonsterCtrl : MonoBehaviour
 
     float turn = 1;
 
-    void Awake()
-    {
-       // Invoke("Think", 3);
-    }
+    bool isChange;
 
     // Start is called before the first frame update
     void Start()
@@ -58,9 +55,8 @@ public class MonsterCtrl : MonoBehaviour
         rigid = GetComponent<Rigidbody2D>();
         sprite = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
-        PlayerTr = GetComponent<Transform>();
-
-
+        Player = GetComponent<PlayerCtrl>();
+        capcoll = GetComponent<CapsuleCollider2D>();
     }
 
     // Update is called once per frame
@@ -76,16 +72,14 @@ public class MonsterCtrl : MonoBehaviour
                 Plant_AI();
             if (m_MonType == MonType.Fly_Monster)
                 FlyMonster_AI();
-           // if (m_MonType == MonType.WalkJumpMonster)
-               // WalkJumpMonster_AI();
+            if (m_MonType == MonType.Snail)
+                Snail_AI();
         }
     }
 
-    void WalkMonster_AI()
+    void CheckPlatform()
     {
-        rigid.velocity = new Vector2(turn, rigid.velocity.y);
-
-        Vector2 frontVec = new Vector2(rigid.position.x + turn * 0.8f, rigid.position.y - 0.8f);
+        Vector2 frontVec = new Vector2(rigid.position.x + turn, rigid.position.y - 0.8f);
         Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
         RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1, LayerMask.GetMask("Platform"));
         if (rayGHit.collider == null)
@@ -96,13 +90,32 @@ public class MonsterCtrl : MonoBehaviour
             sprite.flipX = turn == 1;
     }
 
+    void Snail_AI()
+    {
+        rigid.velocity = new Vector2(turn, rigid.velocity.y);       
+        if(isChange ==true)
+        {
+             rigid.velocity = new Vector2(turn * 7, rigid.velocity.y);
+        }
+        CheckPlatform();
+    }
+    void WalkMonster_AI()
+    {
+        rigid.velocity = new Vector2(turn, rigid.velocity.y);
+        CheckPlatform();
+    }
+    void RunMonster_AI()
+    {
+        rigid.velocity = new Vector2(turn * RunSpeed, rigid.velocity.y);
+        CheckPlatform();
+    }
     void Plant_AI()
     {
         Collider2D a_Coll = Physics2D.OverlapBox(transform.position, new Vector2(14, 14), 0, LayerMask.GetMask("Player"));
 
-        if(a_Coll != null)
+        if (a_Coll != null)
         {
-            if(a_Coll.transform.position.x < transform.position.x)  //Left
+            if (a_Coll.transform.position.x < transform.position.x)  //Left
             {
                 anim.SetBool("Attack", true);
                 sprite.flipX = false;
@@ -134,27 +147,12 @@ public class MonsterCtrl : MonoBehaviour
                     }
                     shootTime = 0f;
                 }
-            }   
+            }
         }
         else
         {
             anim.SetBool("Attack", false);
         }
-    }
-
-    void RunMonster_AI()
-    {
-        rigid.velocity = new Vector2(turn * RunSpeed, rigid.velocity.y);
-
-        Vector2 frontVec = new Vector2(rigid.position.x + turn, rigid.position.y - 0.7f);
-        Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
-        RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 0.5f, LayerMask.GetMask("Platform"));
-        if (rayGHit.collider == null)
-        {
-            turn *= -1;
-        }
-        if (turn != 0)
-            sprite.flipX = turn == 1;
     }
 
     void FlyMonster_AI()
@@ -191,10 +189,18 @@ public class MonsterCtrl : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D coll)
     {
-        if(coll.gameObject.tag =="P_Bullet")
+        if (coll.gameObject.tag == "P_Bullet")
         {
-            Destroy(coll.gameObject);
-            TakeDemaged(20);
+            if (m_MonType == MonType.Snail)
+            {
+                Destroy(coll.gameObject);
+            }
+            else
+            {
+                Destroy(coll.gameObject);
+                TakeDemaged(20);
+            }
+
         }
     }
 
@@ -214,19 +220,38 @@ public class MonsterCtrl : MonoBehaviour
         {
             m_curHp = 0;
             m_HpBarObj.SetActive(false);
-            MonsterDie();       
-            
+            MonsterDie();                
         }
 
     }
 
-    void MonsterDie()
+    public void Snail_TakeDemaged(float a_Value)
+    {
+        m_curHp -= a_Value;
+
+        if(m_curHp == 50)
+        {
+            anim.SetTrigger("Hit");
+            anim.SetBool("ChangeShell", true);
+            isChange = true;
+        }
+        else if(m_curHp == 0)
+        {
+            m_curHp = 0;
+            anim.SetTrigger("ShellHit");
+            MonsterDie();
+        }
+    }
+
+    public void MonsterDie()
     {
         isDie = true;
-        anim.SetTrigger("Death");
-        Destroy(gameObject, 0.3f);
+        rigid.velocity = Vector2.zero;
+        capcoll.enabled = false;
 
-        SpawnCoin();     
+        rigid.AddForce(Vector2.up * 5, ForceMode2D.Impulse);
+
+        SpawnCoin();
     }
 
     void SpawnCoin()
@@ -235,7 +260,6 @@ public class MonsterCtrl : MonoBehaviour
         {
             GameObject a_CoinObj = Instantiate(GameMgr.Inst.m_CoinItem) as GameObject;
             a_CoinObj.transform.position = this.transform.position;
-
         }
     }
 

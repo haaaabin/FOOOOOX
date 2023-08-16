@@ -25,7 +25,7 @@ public class PlayerCtrl : MonoBehaviour
     private CapsuleCollider2D coll;
     private SpriteRenderer sprite;
 
-    //--- ÃÑ¾Ë º¯¼ö ---
+    //--- ï¿½Ñ¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ---
     public GameObject m_BulletObj = null;
     public GameObject m_shootPos = null;
     float BulletSpeed = 10.0f;
@@ -58,19 +58,20 @@ public class PlayerCtrl : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
         if (!isDie)
         { 
-            //ÁÂ¿ìÀÌµ¿
+            //ì´ë™
             dirX = Input.GetAxis("Horizontal");
             transform.Translate(dirX * Time.deltaTime * moveSpeed, 0, 0);
 
-            //Á¡ÇÁ
+            //ì í”„
             if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
             {
                 rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
             }
 
-            //ÃÑ¾Ë ¹ß»ç
+            //ê³µê²©
             if (Input.GetKeyDown(KeyCode.Z))
             {
                 if (m_BulletObj == null)
@@ -103,18 +104,18 @@ public class PlayerCtrl : MonoBehaviour
         Vector2 Dir = transform.position;
         Dir.x = transform.position.x;
         Dir.y = transform.position.y - 1.5f;
-        //ÇÃ·¹ÀÌ¾î·ÎºÎÅÍ Vector2.down ¹æÇâÀ¸·Î Ray¸¦ ½î¾Æ¼­ RaycastÀÇ Ãæµ¹·Î½á ¶¥ À§¿¡ ÀÖ´ÂÁö¸¦ ÆÇÁ¤
+        //ï¿½Ã·ï¿½ï¿½Ì¾ï¿½Îºï¿½ï¿½ï¿½ Vector2.down ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Rayï¿½ï¿½ ï¿½ï¿½Æ¼ï¿½ Raycastï¿½ï¿½ ï¿½æµ¹ï¿½Î½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         return Physics2D.BoxCast(Dir, new Vector2(0.5f,0.5f), 0f, Vector2.down, 1f, LayerMask.GetMask("Platform"));
     }
 
     void UpdateAnimState()
     {
-        if (dirX > 0)   //¿À¸¥ÂÊ
+        if (dirX > 0)   //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         {
             anim.SetInteger("state", 1);
             transform.localScale = new Vector3(1, 1, 1);
         }
-        else if (dirX < 0)  //¿ÞÂÊ
+        else if (dirX < 0)  //ï¿½ï¿½ï¿½ï¿½
         {
             anim.SetInteger("state", 1);
             transform.localScale = new Vector3(-1, 1, 1);
@@ -134,8 +135,6 @@ public class PlayerCtrl : MonoBehaviour
         }
     }
 
- 
-
     void OnCollisionEnter2D(Collision2D coll)
     {
         if (coll.gameObject.tag == "Monster")
@@ -143,7 +142,20 @@ public class PlayerCtrl : MonoBehaviour
             PlayerTakeDemaged();
             OnDamaged(coll.transform.position);
         }
-        if(coll.gameObject.tag == "M_Bullet")
+        if(coll.gameObject.tag == "Snail")
+        {
+            if (rigid.velocity.y < 0 && transform.position.y > coll.transform.position.y)
+            {
+                OnAttack(coll.transform);
+            }
+            else
+            {
+                PlayerTakeDemaged();
+                OnDamaged(coll.transform.position);
+
+            }
+        }
+        if(coll.gameObject.tag == "M_Bullet")   
         {
             Destroy(coll.gameObject);
             PlayerTakeDemaged();
@@ -151,9 +163,16 @@ public class PlayerCtrl : MonoBehaviour
         }
     }
 
+    void OnAttack(Transform enemy)
+    {
+        rigid.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
+        MonsterCtrl mon = enemy.GetComponent<MonsterCtrl>();
+        mon.Snail_TakeDemaged(50);     
+    }
+
     void OnTriggerEnter2D(Collider2D coll)
     {
-        if(coll.gameObject.name.Contains("Coin"))
+        if(coll.gameObject.tag == "Coin")
         {
             GameMgr.Inst.AddGold();
             Destroy(coll.gameObject);
@@ -173,8 +192,6 @@ public class PlayerCtrl : MonoBehaviour
             PlayerDie();
         }
     }
-
-
 
     void OnDamaged(Vector2 targetPos)
     {
@@ -196,6 +213,5 @@ public class PlayerCtrl : MonoBehaviour
     {
         isDie = true;
         anim.SetTrigger("Die");
-       // SceneManager.LoadScene("SampleScene")
     }
 }
