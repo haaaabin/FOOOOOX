@@ -172,7 +172,7 @@ public class PlayerCtrl : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D coll)
     {
-        if(coll.gameObject.tag == "Coin")
+        if(coll.gameObject.name.Contains("Coin"))
         {
             GameMgr.Inst.AddGold();
             Destroy(coll.gameObject);

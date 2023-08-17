@@ -206,23 +206,23 @@ public class MonsterCtrl : MonoBehaviour
 
     public void TakeDemaged(float a_Value)
     {
-        anim.SetTrigger("Hit");
-
-        if (m_HpBarObj != null)
-            m_HpBarObj.SetActive(true);
+        if (m_curHp <= 0.0f)
+            return;
 
         m_curHp -= a_Value;
+        if (m_HpBarObj != null)
+            m_HpBarObj.SetActive(true);
 
         if (m_hpBarImg != null)
             m_hpBarImg.fillAmount = m_curHp / m_Hp;
 
-        if (m_curHp <= 0)
+        if (m_curHp <= 0.0f)
         {
-            m_curHp = 0;
+            m_curHp = 0.0f;
             m_HpBarObj.SetActive(false);
-            MonsterDie();                
+            MonsterDie();         
         }
-
+        anim.SetTrigger("Hit");
     }
 
     public void Snail_TakeDemaged(float a_Value)
@@ -239,7 +239,7 @@ public class MonsterCtrl : MonoBehaviour
         {
             m_curHp = 0;
             anim.SetTrigger("ShellHit");
-            MonsterDie();
+            MonsterDie();            
         }
     }
 
@@ -247,20 +247,12 @@ public class MonsterCtrl : MonoBehaviour
     {
         isDie = true;
         rigid.velocity = Vector2.zero;
-        capcoll.enabled = false;
-
+        gameObject.GetComponentInChildren<CapsuleCollider2D>().enabled = false;
         rigid.AddForce(Vector2.up * 5, ForceMode2D.Impulse);
 
-        SpawnCoin();
-    }
+        GameMgr. Inst.SpawnCoin(transform.position);
 
-    void SpawnCoin()
-    {
-        if (GameMgr.Inst.m_CoinItem != null)
-        {
-            GameObject a_CoinObj = Instantiate(GameMgr.Inst.m_CoinItem) as GameObject;
-            a_CoinObj.transform.position = this.transform.position;
-        }
+        Destroy(gameObject,0.5f);
     }
 
 }
