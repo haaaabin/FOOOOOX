@@ -43,7 +43,7 @@ public class MonsterCtrl : MonoBehaviour
     public GameObject m_shootPos = null;
     public float Bulletspeed = 10f;
 
-    float turn = 1;
+    public float turn = 1;
 
     bool isChange;
 

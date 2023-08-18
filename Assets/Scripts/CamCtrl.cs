@@ -8,8 +8,8 @@ public class CamCtrl : MonoBehaviour
     public float speed;
 
     //카메라 영역 설정
-    public Vector2 minCameraBoundary = new Vector2(-0.19f, -1.89f);
-    public Vector2 maxCameraBoundary = new Vector2(100f, 0.97f);
+    public static Vector2 minCameraBoundary = new Vector2(-0.3f, -1.85f);
+    public static Vector2 maxCameraBoundary = new Vector2(189f, 0.7f);
 
     //Start is called before the first frame update
     void Start()

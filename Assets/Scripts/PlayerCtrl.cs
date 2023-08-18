@@ -94,18 +94,14 @@ public class PlayerCtrl : MonoBehaviour
 
     void LimitMove()
     {
-        if(transform.position.x < -11.0f)
-        {
-            transform.position = new Vector2(-11.0f, transform.position.y);
-        }
+        Vector2 dir = transform.position;
+        if (dir.x < CamCtrl.minCameraBoundary.x)
+            dir.x = CamCtrl.minCameraBoundary.x;
+
     }
     bool IsGrounded()
     {
-        Vector2 Dir = transform.position;
-        Dir.x = transform.position.x;
-        Dir.y = transform.position.y - 1.5f;
-        //�÷��̾�κ��� Vector2.down �������� Ray�� ��Ƽ� Raycast�� �浹�ν� �� ���� �ִ����� ����
-        return Physics2D.BoxCast(Dir, new Vector2(0.5f,0.5f), 0f, Vector2.down, 1f, LayerMask.GetMask("Platform"));
+        return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, 0.5f, LayerMask.GetMask("Platform"));
     }
 
     void UpdateAnimState()
@@ -141,6 +137,7 @@ public class PlayerCtrl : MonoBehaviour
         {
             PlayerTakeDemaged();
             OnDamaged(coll.transform.position);
+            
         }
         if(coll.gameObject.tag == "Snail")
         {
@@ -158,6 +155,10 @@ public class PlayerCtrl : MonoBehaviour
         if(coll.gameObject.tag == "M_Bullet")   
         {
             Destroy(coll.gameObject);
+            PlayerTakeDemaged();
+        }
+        if(coll.gameObject.layer == LayerMask.NameToLayer("Trap"))
+        {
             PlayerTakeDemaged();
             OnDamaged(coll.transform.position);
         }
@@ -191,21 +192,23 @@ public class PlayerCtrl : MonoBehaviour
             m_curHP = 0;
             PlayerDie();
         }
+
+       
     }
 
     void OnDamaged(Vector2 targetPos)
     {
-        playerState = 1 << 10;
+        gameObject.layer = 10;
         sprite.color = new Color(1, 1, 1, 0.4f);
 
         int dirc = transform.position.x - targetPos.x > 0 ? 1 : -1;
-        rigid.AddForce(new Vector2(dirc, 1f) * 2, ForceMode2D.Impulse);
-        Invoke("OffDamaged", 1);
+        rigid.AddForce(new Vector2(dirc, 0.5f) * 5, ForceMode2D.Impulse);
+        Invoke("OffDamaged", 3);
     }
 
     void OffDamaged()
     {
-        playerState = 1 << 9;
+        gameObject.layer = 6;
         sprite.color = new Color(1, 1, 1, 1);
     }
 
@@ -213,5 +216,6 @@ public class PlayerCtrl : MonoBehaviour
     {
         isDie = true;
         anim.SetTrigger("Die");
+        Time.timeScale = 0.0f;
     }
 }
