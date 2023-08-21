@@ -220,26 +220,31 @@ public class MonsterCtrl : MonoBehaviour
         {
             m_curHp = 0.0f;
             m_HpBarObj.SetActive(false);
-            MonsterDie();         
+            MonsterDie();
+            GameMgr.Inst.SpawnCoin(transform.position);
         }
         anim.SetTrigger("Hit");
+
+
     }
 
     public void Snail_TakeDemaged(float a_Value)
     {
         m_curHp -= a_Value;
 
-        if(m_curHp == 50)
+        if(m_curHp <= 50)
         {
             anim.SetTrigger("Hit");
             anim.SetBool("ChangeShell", true);
             isChange = true;
         }
-        else if(m_curHp == 0)
+        else if(m_curHp == 0.0f)
         {
-            m_curHp = 0;
+            m_curHp = 0.0f;
             anim.SetTrigger("ShellHit");
-            MonsterDie();            
+            GameMgr.Inst.SpawnCoin(transform.position);
+            MonsterDie();
+            
         }
     }
 
@@ -249,9 +254,7 @@ public class MonsterCtrl : MonoBehaviour
         rigid.velocity = Vector2.zero;
         gameObject.GetComponentInChildren<CapsuleCollider2D>().enabled = false;
         rigid.AddForce(Vector2.up * 5, ForceMode2D.Impulse);
-
-        GameMgr. Inst.SpawnCoin(transform.position);
-
+         
         Destroy(gameObject,0.5f);
     }
 

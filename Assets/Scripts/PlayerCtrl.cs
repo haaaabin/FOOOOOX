@@ -135,7 +135,7 @@ public class PlayerCtrl : MonoBehaviour
     {
         if (coll.gameObject.tag == "Monster")
         {
-            PlayerTakeDemaged();
+            PlayerTakeDemaged(10);
             OnDamaged(coll.transform.position);
             
         }
@@ -147,7 +147,7 @@ public class PlayerCtrl : MonoBehaviour
             }
             else
             {
-                PlayerTakeDemaged();
+                PlayerTakeDemaged(10);
                 OnDamaged(coll.transform.position);
 
             }
@@ -155,11 +155,11 @@ public class PlayerCtrl : MonoBehaviour
         if(coll.gameObject.tag == "M_Bullet")   
         {
             Destroy(coll.gameObject);
-            PlayerTakeDemaged();
+            PlayerTakeDemaged(10);
         }
         if(coll.gameObject.layer == LayerMask.NameToLayer("Trap"))
         {
-            PlayerTakeDemaged();
+            PlayerTakeDemaged(10);
             OnDamaged(coll.transform.position);
         }
     }
@@ -180,9 +180,11 @@ public class PlayerCtrl : MonoBehaviour
         }
     }
 
-    void PlayerTakeDemaged()
+    void PlayerTakeDemaged(float a_Value)
     {
-        m_curHP -= 100;
+        m_curHP -= a_Value;
+
+        GameMgr.Inst.DamageText(-a_Value, transform.position, Color.blue);
 
         if (m_HpBarImg != null)
             m_HpBarImg.fillAmount = m_curHP / m_HP;
@@ -203,7 +205,7 @@ public class PlayerCtrl : MonoBehaviour
 
         int dirc = transform.position.x - targetPos.x > 0 ? 1 : -1;
         rigid.AddForce(new Vector2(dirc, 0.5f) * 5, ForceMode2D.Impulse);
-        Invoke("OffDamaged", 3);
+        Invoke("OffDamaged", 1);
     }
 
     void OffDamaged()
