@@ -69,6 +69,8 @@ public class GameMgr : MonoBehaviour
             coin.transform.position = Coin_points[i].position;
         }
 
+        
+
     }
     IEnumerator CreateMonster()
     {
@@ -119,12 +121,6 @@ public class GameMgr : MonoBehaviour
 
         Time.timeScale = 0.0f;
 
-        if(m_ExitBtn != null)
-            m_ExitBtn.onClick.AddListener(()=>
-            {
-                m_StorePanel.SetActive(false);
-                Time.timeScale = 1.0f;
-            });
     }
 
     public void SpawnCoin(Vector3 a_Pos)
@@ -137,11 +133,16 @@ public class GameMgr : MonoBehaviour
         Destroy(a_CoinObj, 10.0f);
     }
 
-    public void AddGold()
+    public void AddGold(int value = 10)
     {
-        m_CurGold += 10;
+        m_CurGold += value;
         if (m_CurGold < 0)
             m_CurGold = 0;
+
+        //GlobalValue.g_UserGold += value;
+
+        //if (GlobalValue.g_UserGold <= 0)
+        //    GlobalValue.g_UserGold = 0;
 
         m_GoldText.text = m_CurGold.ToString();
     }

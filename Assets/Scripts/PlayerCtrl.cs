@@ -31,8 +31,8 @@ public class PlayerCtrl : MonoBehaviour
     float BulletSpeed = 10.0f;
 
     public Image m_HpBarImg = null;
-    float m_HP = 1000;
-    float m_curHP = 1000;
+    public static int m_HP = 500;
+    public static int m_curHP = 500;
 
     LayerMask playerState;
 
@@ -49,6 +49,8 @@ public class PlayerCtrl : MonoBehaviour
         sprite = GetComponent<SpriteRenderer>();
 
         isDie = false;
+
+       
     }
 
     void FixedUpdate()
@@ -87,6 +89,7 @@ public class PlayerCtrl : MonoBehaviour
                 }
 
             }
+ 
             UpdateAnimState();
         }
         LimitMove();
@@ -95,8 +98,8 @@ public class PlayerCtrl : MonoBehaviour
     void LimitMove()
     {
         Vector2 dir = transform.position;
-        if (dir.x < CamCtrl.minCameraBoundary.x)
-            dir.x = CamCtrl.minCameraBoundary.x;
+        if (dir.x < -10.3f)
+            dir.x = -10.3f;
 
     }
     bool IsGrounded()
@@ -178,9 +181,14 @@ public class PlayerCtrl : MonoBehaviour
             GameMgr.Inst.AddGold();
             Destroy(coll.gameObject);
         }
+        if(coll.gameObject.name.Contains("door"))
+        {
+            SceneManager.LoadScene("BossScene");
+            
+        }
     }
 
-    void PlayerTakeDemaged(float a_Value)
+    void PlayerTakeDemaged(int a_Value)
     {
         m_curHP -= a_Value;
 
@@ -194,8 +202,6 @@ public class PlayerCtrl : MonoBehaviour
             m_curHP = 0;
             PlayerDie();
         }
-
-       
     }
 
     void OnDamaged(Vector2 targetPos)

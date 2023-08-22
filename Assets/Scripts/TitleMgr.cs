@@ -16,7 +16,8 @@ public class TitleMgr : MonoBehaviour
         if (m_StartGameBtn != null)
             m_StartGameBtn.onClick.AddListener(()=>
             {
-                SceneManager.LoadScene("GameScene");
+                SceneManager.LoadScene("Level1");
+                SceneManager.LoadScene("GameScene", LoadSceneMode.Additive);
             });
     }
 
