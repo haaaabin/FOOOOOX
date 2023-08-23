@@ -22,7 +22,7 @@ public class PlayerCtrl : MonoBehaviour
 
     private Rigidbody2D rigid;
     private Animator anim;
-    private CapsuleCollider2D coll;
+    private CapsuleCollider2D playerColl;
     private SpriteRenderer sprite;
 
     //--- �Ѿ� ���� ---
@@ -31,10 +31,12 @@ public class PlayerCtrl : MonoBehaviour
     float BulletSpeed = 10.0f;
 
     public Image m_HpBarImg = null;
-    public static int m_HP = 500;
-    public static int m_curHP = 500;
+    public float m_HP = 1000.0f;
+    public float m_curHP = 1000.0f;
 
     LayerMask playerState;
+
+    LayerMask groundMask = -1;
 
     bool isDie = false;
 
@@ -45,12 +47,12 @@ public class PlayerCtrl : MonoBehaviour
 
         rigid = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-        coll = GetComponent<CapsuleCollider2D>();
+        playerColl = GetComponent<CapsuleCollider2D>();
         sprite = GetComponent<SpriteRenderer>();
 
         isDie = false;
 
-       
+        groundMask = 1 << LayerMask.NameToLayer("Platform") | 1 << LayerMask.NameToLayer("AirPlatform");
     }
 
     void FixedUpdate()
@@ -98,13 +100,12 @@ public class PlayerCtrl : MonoBehaviour
     void LimitMove()
     {
         Vector2 dir = transform.position;
-        if (dir.x < -10.3f)
+        if (dir.x <= -10.3f)
             dir.x = -10.3f;
-
     }
     bool IsGrounded()
     {
-        return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, 0.5f, LayerMask.GetMask("Platform"));
+        return Physics2D.BoxCast(playerColl.bounds.center, playerColl.bounds.size, 0f, Vector2.down, 0.5f, groundMask);
     }
 
     void UpdateAnimState()
@@ -150,7 +151,7 @@ public class PlayerCtrl : MonoBehaviour
             }
             else
             {
-                PlayerTakeDemaged(10);
+                PlayerTakeDemaged(50);
                 OnDamaged(coll.transform.position);
 
             }
@@ -158,11 +159,17 @@ public class PlayerCtrl : MonoBehaviour
         if(coll.gameObject.tag == "M_Bullet")   
         {
             Destroy(coll.gameObject);
-            PlayerTakeDemaged(10);
+            PlayerTakeDemaged(50);
         }
         if(coll.gameObject.layer == LayerMask.NameToLayer("Trap"))
         {
-            PlayerTakeDemaged(10);
+            PlayerTakeDemaged(50);
+            OnDamaged(coll.transform.position);
+        }
+
+        if (coll.gameObject.tag == "Boss")
+        {
+            PlayerTakeDemaged(50);
             OnDamaged(coll.transform.position);
         }
     }
@@ -183,8 +190,21 @@ public class PlayerCtrl : MonoBehaviour
         }
         if(coll.gameObject.name.Contains("door"))
         {
+            GameMgr.m_gameLevel = GameLevel.Boss;
             SceneManager.LoadScene("BossScene");
             
+        }
+        if(coll.gameObject.name.Contains("Wall"))
+        {
+            coll.isTrigger = true;
+        }
+    }
+
+    void OnTriggerExit2D(Collider2D coll)
+    {
+        if (coll.gameObject.name.Contains("Wall"))
+        { 
+            coll.isTrigger = false;
         }
     }
 
@@ -192,16 +212,16 @@ public class PlayerCtrl : MonoBehaviour
     {
         m_curHP -= a_Value;
 
-        GameMgr.Inst.DamageText(-a_Value, transform.position, Color.blue);
-
         if (m_HpBarImg != null)
             m_HpBarImg.fillAmount = m_curHP / m_HP;
-
-        if(m_curHP <=0)
+  
+        if (m_curHP <=0)
         {
             m_curHP = 0;
             PlayerDie();
         }
+
+        GameMgr.Inst.DamageText(-a_Value, transform.position, Color.blue);
     }
 
     void OnDamaged(Vector2 targetPos)

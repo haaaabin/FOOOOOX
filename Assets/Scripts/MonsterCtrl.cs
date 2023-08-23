@@ -3,13 +3,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+public enum BossState
+{
+    Boss_Idle,
+    Boss_Move,
+    Boss_Attack,
+    Fall_Bull
+}
+
 public enum MonType
 {
     Walk_Monster,
     Run_Monster,
     plant,
     Fly_Monster,
-    Snail
+    Snail,
+    Boss
 }
 public class MonsterCtrl : MonoBehaviour
 {
@@ -24,7 +33,7 @@ public class MonsterCtrl : MonoBehaviour
     public float MoveSpeed = 3;
     float RunSpeed = 5;
     float m_Hp = 100;
-    float m_CurHp = 100;
+    [HideInInspector] public float m_CurHp = 100;
 
     public int nextMove;
 
@@ -47,6 +56,22 @@ public class MonsterCtrl : MonoBehaviour
 
     bool isChange;
 
+    float delay_time = 0;
+
+    //Boss
+    BossState m_BossState = BossState.Boss_Idle;
+    int m_ShootCount = 0;
+    public GameObject m_bosshpBarObj = null;
+    public Image m_bosshpBarImg = null;
+
+    float move_Time = 0.0f;
+    float move_delay = 1.0f;
+
+    public GameObject ballPrefab = null;
+    float spawn = 0.5f;
+    float delta = 0.0f;
+    int fallCount = 0;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -57,6 +82,13 @@ public class MonsterCtrl : MonoBehaviour
         anim = GetComponent<Animator>();
         Player = GetComponent<PlayerCtrl>();
         capcoll = GetComponent<CapsuleCollider2D>();
+
+        if(m_MonType == MonType.Boss)
+        {
+            GameMgr.m_gameLevel = GameLevel.Boss;
+            m_Hp = 3000.0f;
+            m_curHp = m_Hp;          
+        }
     }
 
     // Update is called once per frame
@@ -66,14 +98,73 @@ public class MonsterCtrl : MonoBehaviour
         {
             if (m_MonType == MonType.Walk_Monster)
                 WalkMonster_AI();
-            if (m_MonType == MonType.Run_Monster)
+            else if (m_MonType == MonType.Run_Monster)
                 RunMonster_AI();
-            if (m_MonType == MonType.plant)
+            else if (m_MonType == MonType.plant)
                 Plant_AI();
-            if (m_MonType == MonType.Fly_Monster)
-                FlyMonster_AI();
-            if (m_MonType == MonType.Snail)
+            else if (m_MonType == MonType.Snail)
                 Snail_AI();
+            else if (m_MonType == MonType.Boss)
+                Boss_AI();
+        }
+    }
+
+    void Boss_AI()
+    {
+        Collider2D a_Coll = Physics2D.OverlapBox(transform.position, new Vector2(14, 14), 0, LayerMask.GetMask("Player"));
+        if(a_Coll != null)
+        {
+            m_BossState = BossState.Boss_Move;
+            if (m_bosshpBarObj != null)
+                m_bosshpBarObj.SetActive(true);
+
+        }
+
+        if (m_BossState == BossState.Boss_Move)
+        {
+            
+            rigid.velocity = new Vector2(-turn * MoveSpeed, rigid.velocity.y);
+
+            Vector2 frontVec = new Vector2(rigid.position.x + (-turn * 3), rigid.position.y);
+            Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
+            RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1, LayerMask.GetMask("Wall"));
+            if (rayGHit.collider != null)
+            {
+                turn *= -1;
+            }
+            if (turn != 0)
+                sprite.flipX = turn == -1;
+
+            delay_time += Time.deltaTime;
+            if (delay_time >= 10.0f)
+            {
+                delay_time = 0.0f;
+
+                MoveSpeed *= 0.98f;
+                m_BossState = BossState.Fall_Bull;
+            }
+                           
+        }
+        else if(m_BossState == BossState.Fall_Bull)
+        {
+            delta += Time.deltaTime;
+            if(delta > spawn)
+            {
+                delta = 0.0f;
+                GameObject go = Instantiate(ballPrefab) as GameObject;
+
+                int dropPosX = Random.Range(23, 38);
+                go.transform.position = new Vector3(dropPosX, 6.2f, 0.0f);
+
+                fallCount++;
+                if (fallCount > 10)
+                {
+                    fallCount = 0;
+                    m_BossState = BossState.Boss_Move;
+                }
+            }
+
+            
         }
     }
 
@@ -155,11 +246,6 @@ public class MonsterCtrl : MonoBehaviour
         }
     }
 
-    void FlyMonster_AI()
-    {
-
-    }
-
     //void WalkJumpMonster_AI()
     //{
     //    rigid.velocity = new Vector2(nextMove * 2f, rigid.velocity.y);
@@ -201,6 +287,11 @@ public class MonsterCtrl : MonoBehaviour
                 TakeDemaged(20);
             }
 
+            if(m_MonType == MonType.Boss)
+            {
+                BossTakeDemaged();
+                OnDamaged();
+            }
         }
     }
 
@@ -225,7 +316,22 @@ public class MonsterCtrl : MonoBehaviour
         }
         anim.SetTrigger("Hit");
 
+    }
 
+    public void BossTakeDemaged(float a_Value = 20)
+    {
+        if (m_curHp <= 0.0f)
+            return;
+
+        m_curHp -= a_Value;
+
+        if (m_bosshpBarImg != null)
+            m_bosshpBarImg.fillAmount = m_curHp / m_Hp;
+
+        if (m_curHp <= 0.0f)
+        {
+            m_curHp = 0.0f;
+        }
     }
 
     public void Snail_TakeDemaged(float a_Value)
@@ -246,6 +352,18 @@ public class MonsterCtrl : MonoBehaviour
             MonsterDie();
             
         }
+    }
+
+    void OnDamaged()
+    {
+        sprite.color = new Color(1, 1, 1, 0.4f);
+
+        Invoke("OffDamaged", 1);
+    }
+
+    void OffDamaged()
+    {
+        sprite.color = new Color(1, 1, 1, 1);
     }
 
     public void MonsterDie()
