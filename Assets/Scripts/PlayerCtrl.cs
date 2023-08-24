@@ -31,8 +31,8 @@ public class PlayerCtrl : MonoBehaviour
     float BulletSpeed = 10.0f;
 
     public Image m_HpBarImg = null;
-    public float m_HP = 1000.0f;
-    public float m_curHP = 1000.0f;
+    public float m_HP = 500.0f;
+    public float m_curHP = 500.0f;
 
     LayerMask playerState;
 
@@ -110,12 +110,13 @@ public class PlayerCtrl : MonoBehaviour
 
     void UpdateAnimState()
     {
-        if (dirX > 0)   //������
+        //좌우 이동
+        if (dirX > 0)   
         {
             anim.SetInteger("state", 1);
             transform.localScale = new Vector3(1, 1, 1);
         }
-        else if (dirX < 0)  //����
+        else if (dirX < 0)  
         {
             anim.SetInteger("state", 1);
             transform.localScale = new Vector3(-1, 1, 1);
@@ -145,6 +146,7 @@ public class PlayerCtrl : MonoBehaviour
         }
         if(coll.gameObject.tag == "Snail")
         {
+            //떨어지는 중이고 snail보다 위에 있을 때 -> 밟을 때
             if (rigid.velocity.y < 0 && transform.position.y > coll.transform.position.y)
             {
                 OnAttack(coll.transform);
@@ -156,11 +158,14 @@ public class PlayerCtrl : MonoBehaviour
 
             }
         }
+
         if(coll.gameObject.tag == "M_Bullet")   
         {
             Destroy(coll.gameObject);
             PlayerTakeDemaged(50);
+            OnDamaged(coll.transform.position);
         }
+
         if(coll.gameObject.layer == LayerMask.NameToLayer("Trap"))
         {
             PlayerTakeDemaged(50);
@@ -242,7 +247,7 @@ public class PlayerCtrl : MonoBehaviour
 
     void PlayerDie()
     {
-        isDie = true;
+        isDie = true;      
         anim.SetTrigger("Die");
         Time.timeScale = 0.0f;
     }

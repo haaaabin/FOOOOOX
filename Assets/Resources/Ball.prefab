@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6311710483751677304}
   - component: {fileID: 6311710483751677305}
   - component: {fileID: -1805985848746824034}
-  - component: {fileID: 8015713512564870825}
+  - component: {fileID: 264415316085451814}
   - component: {fileID: -6628220399578422}
   m_Layer: 17
   m_Name: Ball
@@ -77,12 +77,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 3
-  m_Sprite: {fileID: -442629028, guid: f763aa121210f5744b662375418d84e9, type: 3}
+  m_Sprite: {fileID: 375003313, guid: 7a0afa5b903ed3a4ba538b7717b68cd8, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 2, y: 2}
+  m_Size: {x: 0.32, y: 0.32}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -130,7 +130,7 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!58 &8015713512564870825
+--- !u!58 &264415316085451814
 CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -158,4 +158,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 475aeaa0cd7e14642be04af217ed55fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  player: {fileID: 0}
   m_DownSpeed: 3
+  spawn: 2
+  delta: 0

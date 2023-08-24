@@ -53999,7 +53999,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 2
+  m_SortingOrder: 4
   m_Sprite: {fileID: 21300000, guid: 72de0c64f2c6a498096698322c976a67, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -54065,7 +54065,7 @@ MonoBehaviour:
   jumpPower: 16
   m_BulletObj: {fileID: 311816974986692086, guid: eb8b61d7845917642a8fb170f8d9af8c, type: 3}
   m_shootPos: {fileID: 1796922284}
-  m_HpBarImg: {fileID: 0}
+  m_HpBarImg: {fileID: 1541303677}
   m_HP: 500
   m_curHP: 500
 --- !u!1 &1136592940

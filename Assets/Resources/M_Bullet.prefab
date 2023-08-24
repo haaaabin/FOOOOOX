@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 7557207322260485123}
   - component: {fileID: 7557207322260485120}
   - component: {fileID: 7557207322260485121}
-  - component: {fileID: 7557207322260485126}
   - component: {fileID: 8580226251731629393}
   m_Layer: 12
   m_Name: M_Bullet
@@ -103,27 +102,6 @@ CircleCollider2D:
   m_Offset: {x: 0, y: -0.00051373243}
   serializedVersion: 2
   m_Radius: 0.15418604
---- !u!50 &7557207322260485126
-Rigidbody2D:
-  serializedVersion: 4
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7557207322260485127}
-  m_BodyType: 0
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDrag: 0
-  m_AngularDrag: 0.05
-  m_GravityScale: 1
-  m_Material: {fileID: 0}
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 2
 --- !u!114 &8580226251731629393
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -136,6 +114,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be01dde845abcd149a9dd8c8ae8029d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isLayer:
-    serializedVersion: 2
-    m_Bits: 0

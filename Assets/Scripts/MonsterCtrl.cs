@@ -27,7 +27,7 @@ public class MonsterCtrl : MonoBehaviour
     Rigidbody2D rigid;
     SpriteRenderer sprite;
     Animator anim;
-    public PlayerCtrl Player;
+    PlayerCtrl Player = null;
     CapsuleCollider2D capcoll;
 
     public float MoveSpeed = 3;
@@ -44,8 +44,8 @@ public class MonsterCtrl : MonoBehaviour
 
     public GameObject m_HpBarObj = null;
     public Image m_hpBarImg = null;
-    float m_HP = 100;
-    float m_curHp = 100;
+    float m_HP = 20;
+    float m_curHp = 20;
 
     [Header("--- Plant Monster --- ")]
     public GameObject m_MonBullet = null;
@@ -72,6 +72,8 @@ public class MonsterCtrl : MonoBehaviour
     float delta = 0.0f;
     int fallCount = 0;
 
+    public GameObject m_bossBullet = null;
+    public GameObject m_BShootPos = null;
     // Start is called before the first frame update
     void Start()
     {
@@ -80,7 +82,7 @@ public class MonsterCtrl : MonoBehaviour
         rigid = GetComponent<Rigidbody2D>();
         sprite = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
-        Player = GetComponent<PlayerCtrl>();
+        Player = GameObject.FindObjectOfType<PlayerCtrl>();
         capcoll = GetComponent<CapsuleCollider2D>();
 
         if(m_MonType == MonType.Boss)
@@ -136,35 +138,51 @@ public class MonsterCtrl : MonoBehaviour
                 sprite.flipX = turn == -1;
 
             delay_time += Time.deltaTime;
-            if (delay_time >= 10.0f)
+            if (delay_time >= 5.0f)    //10초 뒤에 돌 떨어트리기
             {
                 delay_time = 0.0f;
 
                 MoveSpeed *= 0.98f;
-                m_BossState = BossState.Fall_Bull;
+                //m_BossState = BossState.Fall_Bull;
+                m_BossState = BossState.Boss_Attack;
             }
                            
         }
-        else if(m_BossState == BossState.Fall_Bull)
+        //else if(m_BossState == BossState.Fall_Bull)
+        //{
+        //    delta += Time.deltaTime;
+        //    if(delta > spawn)
+        //    {               
+        //        GameObject go = Instantiate(ballPrefab) as GameObject;
+
+        //        int dropPosX = Random.Range(23, 38);
+        //        go.transform.position = new Vector3(dropPosX, 6.2f, 0.0f);
+
+        //        fallCount++;
+        //        if (fallCount > 9)  //10개 딸
+        //        {
+        //            fallCount = 0;
+        //            m_BossState = BossState.Boss_Move;
+        //        }
+        //        delta = 0.0f;
+        //    }
+                      
+        //}
+        else if (m_BossState == BossState.Boss_Attack)
         {
-            delta += Time.deltaTime;
-            if(delta > spawn)
-            {
-                delta = 0.0f;
-                GameObject go = Instantiate(ballPrefab) as GameObject;
+            anim.SetTrigger("Attack");
 
-                int dropPosX = Random.Range(23, 38);
-                go.transform.position = new Vector3(dropPosX, 6.2f, 0.0f);
-
-                fallCount++;
-                if (fallCount > 10)
-                {
-                    fallCount = 0;
-                    m_BossState = BossState.Boss_Move;
-                }
-            }
+            //Vector3 a_TargetV =
+            //        Player.transform.position - this.transform.position;    //현재 보스 위치에서 주인공을 향하는 벡터
+            //a_TargetV.Normalize();  //정규화
+            //GameObject a_NewObj = (GameObject)Instantiate(m_bossBullet);
+            //BulletCtrl a_BulletSc = a_NewObj.GetComponent<BulletCtrl>();
+            //a_BulletSc.BulletSpawn(m_BShootPos.transform.position, a_TargetV, Bulletspeed);
 
             
+
+
+        
         }
     }
 
@@ -202,7 +220,7 @@ public class MonsterCtrl : MonoBehaviour
     }
     void Plant_AI()
     {
-        Collider2D a_Coll = Physics2D.OverlapBox(transform.position, new Vector2(14, 14), 0, LayerMask.GetMask("Player"));
+        Collider2D a_Coll = Physics2D.OverlapBox(transform.position, new Vector2(14, 4), 0, LayerMask.GetMask("Player"));
 
         if (a_Coll != null)
         {
@@ -284,7 +302,7 @@ public class MonsterCtrl : MonoBehaviour
             else
             {
                 Destroy(coll.gameObject);
-                TakeDemaged(20);
+                TakeDemaged(10);
             }
 
             if(m_MonType == MonType.Boss)
@@ -318,7 +336,7 @@ public class MonsterCtrl : MonoBehaviour
 
     }
 
-    public void BossTakeDemaged(float a_Value = 20)
+    public void BossTakeDemaged(float a_Value = 10)
     {
         if (m_curHp <= 0.0f)
             return;
@@ -338,32 +356,19 @@ public class MonsterCtrl : MonoBehaviour
     {
         m_curHp -= a_Value;
 
-        if(m_curHp <= 50)
+        if(m_curHp == 10)
         {
             anim.SetTrigger("Hit");
             anim.SetBool("ChangeShell", true);
             isChange = true;
         }
-        else if(m_curHp == 0.0f)
+        else
         {
             m_curHp = 0.0f;
             anim.SetTrigger("ShellHit");
             GameMgr.Inst.SpawnCoin(transform.position);
-            MonsterDie();
-            
+            MonsterDie();           
         }
-    }
-
-    void OnDamaged()
-    {
-        sprite.color = new Color(1, 1, 1, 0.4f);
-
-        Invoke("OffDamaged", 1);
-    }
-
-    void OffDamaged()
-    {
-        sprite.color = new Color(1, 1, 1, 1);
     }
 
     public void MonsterDie()
@@ -374,6 +379,17 @@ public class MonsterCtrl : MonoBehaviour
         rigid.AddForce(Vector2.up * 5, ForceMode2D.Impulse);
          
         Destroy(gameObject,0.5f);
+    }
+    void OnDamaged()
+    {
+        sprite.color = new Color(1, 1, 1, 0.4f);
+
+        Invoke("OffDamaged", 1);
+    }
+
+    void OffDamaged()
+    {
+        sprite.color = new Color(1, 1, 1, 1);
     }
 
 }
