@@ -236,14 +236,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_MonType: 0
-  PlayerTr: {fileID: 0}
   MoveSpeed: 3
+  m_CurHp: 100
   nextMove: 0
   m_HpBarObj: {fileID: 2814448814362766594}
   m_hpBarImg: {fileID: 2814448812434380920}
   m_MonBullet: {fileID: 0}
   m_shootPos: {fileID: 0}
   Bulletspeed: 10
+  turn: 1
+  m_bosshpBarObj: {fileID: 0}
+  m_bosshpBarImg: {fileID: 0}
+  ballPrefab: {fileID: 0}
+  m_bossBullet: {fileID: 0}
+  m_BShootPos: {fileID: 0}
 --- !u!1 &2814448813312046283
 GameObject:
   m_ObjectHideFlags: 0

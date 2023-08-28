@@ -31,14 +31,20 @@ public class PlayerCtrl : MonoBehaviour
     float BulletSpeed = 10.0f;
 
     public Image m_HpBarImg = null;
-    public float m_HP = 500.0f;
-    public float m_curHP = 500.0f;
+    public float initHp = 500.0f;
+    public float hp = 500.0f;
 
     LayerMask playerState;
 
     LayerMask groundMask = -1;
+    LayerMask shieldMask = -1;
 
     bool isDie = false;
+
+    //-- 쉴드
+    float m_SdOnTime = 0.0f;
+    float m_SdDuration = 10.0f; //15초 동안 발동
+    public GameObject ShieldObj = null;
 
     // Start is called before the first frame update
     void Start()
@@ -53,6 +59,8 @@ public class PlayerCtrl : MonoBehaviour
         isDie = false;
 
         groundMask = 1 << LayerMask.NameToLayer("Platform") | 1 << LayerMask.NameToLayer("AirPlatform");
+
+
     }
 
     void FixedUpdate()
@@ -95,6 +103,8 @@ public class PlayerCtrl : MonoBehaviour
             UpdateAnimState();
         }
         LimitMove();
+
+        SkillUpdate();
     }
 
     void LimitMove()
@@ -183,7 +193,7 @@ public class PlayerCtrl : MonoBehaviour
     {
         rigid.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
         MonsterCtrl mon = enemy.GetComponent<MonsterCtrl>();
-        mon.Snail_TakeDemaged(50);     
+        mon.TakeDemaged();     
     }
 
     void OnTriggerEnter2D(Collider2D coll)
@@ -215,22 +225,89 @@ public class PlayerCtrl : MonoBehaviour
 
     void PlayerTakeDemaged(int a_Value)
     {
-        m_curHP -= a_Value;
-
-        if (m_HpBarImg != null)
-            m_HpBarImg.fillAmount = m_curHP / m_HP;
-  
-        if (m_curHP <=0)
-        {
-            m_curHP = 0;
-            PlayerDie();
-        }
+        if (0.0f < m_SdOnTime)  //쉴드 스킬 발동 중일 때.. 데미지 스킬
+            return;
 
         GameMgr.Inst.DamageText(-a_Value, transform.position, Color.blue);
+
+        hp -= a_Value;
+
+        if (m_HpBarImg != null)
+            m_HpBarImg.fillAmount = hp / initHp;
+  
+        if (hp <=0)
+        {
+            hp = 0;
+            PlayerDie();
+        }       
+
+         
     }
+
+    public void UseSkill_Item(SkillType a_SkType)
+    {
+        if(a_SkType == SkillType.Skill_0)
+        {
+            hp += (int)(initHp * 0.3f);
+
+            if (initHp < hp)
+                hp = initHp;
+
+            if (m_HpBarImg != null)
+                m_HpBarImg.fillAmount = hp / initHp;
+        }
+
+        else if(a_SkType == SkillType.Skill_1)
+        {
+            if (0.0f < m_SdOnTime)
+                return;
+
+            m_SdOnTime = m_SdDuration;
+        
+        }
+
+        int a_SkIdx = (int)a_SkType;    //SkillType 인덱스로 변환
+        GlobalValue.g_SkillCount[a_SkIdx]--;    //스킬카운트 차감
+        string a_Skill = "SkItem_" + (a_SkIdx).ToString();
+        PlayerPrefs.SetInt(a_Skill, GlobalValue.g_SkillCount[a_SkIdx]);
+    }
+
+    void SkillUpdate()
+    {
+        //쉴드 상태 업데이트
+        if(0.0f < m_SdOnTime)
+        {
+            m_SdOnTime -= Time.deltaTime;
+            if (ShieldObj != null && ShieldObj.activeSelf == false)
+                ShieldObj.SetActive(true);
+
+            Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"),
+                    LayerMask.NameToLayer("Monster"), true);
+            Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"),
+                   LayerMask.NameToLayer("Trap"), true);
+            Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"),
+                   LayerMask.NameToLayer("Boss"), true);
+        }
+        else
+        {
+            if (ShieldObj != null && ShieldObj.activeSelf == true)
+                ShieldObj.SetActive(false);
+
+            Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"),
+                   LayerMask.NameToLayer("Monster"), false);
+            Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"),
+                   LayerMask.NameToLayer("Trap"), false);
+            Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"),
+                   LayerMask.NameToLayer("Boss"), false);
+        }
+    }  
+        
 
     void OnDamaged(Vector2 targetPos)
     {
+        if (0.0f < m_SdOnTime)  //쉴드 스킬 발동 중일 때.. 데미지 스킬
+            return;
+
         gameObject.layer = 10;
         sprite.color = new Color(1, 1, 1, 0.4f);
 

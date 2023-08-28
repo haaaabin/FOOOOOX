@@ -23,32 +23,74 @@ public class GameMgr : MonoBehaviour
     [Header(" ---- Store ----- ")]
     public Button m_StoreBtn = null;
     public GameObject m_StorePanel = null;
-    public Button m_ExitBtn = null;
+    public Button ExitBtn = null;
+    public Text m_StoreGold = null;
+
+    public ItemSlot[] m_ItemSlot;
 
     public GameObject m_CoinItem = null;
     public Text m_GoldText = null;
     int m_CurGold = 0;
 
+    PlayerCtrl m_Player = null;
+
+    public SkInvenNode[] m_SkInvenNode;     //Skill 인벤토리 연결 변수
+
+    //--- 설정 ----
+    [Header("---- Config -----")]
+    public Button m_ConfigBtn = null;
+    public GameObject m_ConfigPanel = null;
+    
     public static GameMgr Inst = null;
 
     public static GameLevel m_gameLevel = GameLevel.Level1;
+
     void Awake()
     {
         Inst = this;
     }
+
     // Start is called before the first frame update
     void Start()
     {
         Time.timeScale = 1.0f;
+        GlobalValue.LoadGameData();
+
+        RefreshGameUI();
 
         if (m_StoreBtn != null)
-            m_StoreBtn.onClick.AddListener(StorePanel);
-
+            m_StoreBtn.onClick.AddListener(StoreBox);
+         
+        m_Player = GameObject.FindObjectOfType<PlayerCtrl>();
     }
     
     // Update is called once per frame
     void Update()
     {
+        //--단축키 이용으로 스킬 사용
+        if(Input.GetKeyDown(KeyCode.Alpha1) ||
+            Input.GetKeyDown(KeyCode.Keypad1))
+        {
+            UseSkill_Key(SkillType.Skill_0);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2) ||
+            Input.GetKeyDown(KeyCode.Keypad2))
+        {
+            UseSkill_Key(SkillType.Skill_1);
+        }
+    }
+
+    public void UseSkill_Key(SkillType a_SkType)
+    {
+        if (GlobalValue.g_SkillCount[(int)a_SkType] <= 0)
+            return;
+
+        if (m_Player != null)
+            m_Player.UseSkill_Item(a_SkType);
+
+        if ((int)a_SkType < m_SkInvenNode.Length)
+            m_SkInvenNode[(int)a_SkType].m_SkCountText.text =
+                        GlobalValue.g_SkillCount[(int)a_SkType].ToString();
 
     }
 
@@ -66,14 +108,7 @@ public class GameMgr : MonoBehaviour
         m_DmgClone.transform.position = m_StCacPos;
 
     }
-    void StorePanel()
-    {
-        if (m_StorePanel != null)
-            m_StorePanel.SetActive(true);
 
-        Time.timeScale = 0.0f;
-
-    }
 
     public void SpawnCoin(Vector3 a_Pos)
     {
@@ -82,20 +117,84 @@ public class GameMgr : MonoBehaviour
 
         GameObject a_CoinObj = Instantiate(m_CoinItem) as GameObject;
         a_CoinObj.transform.position = a_Pos;
-        Destroy(a_CoinObj, 10.0f);
+        Destroy(a_CoinObj, 10);
     }
 
     public void AddGold(int value = 10)
-    {
-        m_CurGold += value;
+    {        
         if (m_CurGold < 0)
             m_CurGold = 0;
 
-        //GlobalValue.g_UserGold += value;
+        if (GlobalValue.g_UserGold <= 0)
+            GlobalValue.g_UserGold = 0;
 
-        //if (GlobalValue.g_UserGold <= 0)
-        //    GlobalValue.g_UserGold = 0;
+        m_CurGold += value;
+        GlobalValue.g_UserGold += value;
 
         m_GoldText.text = m_CurGold.ToString();
+        PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
+    }
+
+    public void StoreBox()
+    {
+        Time.timeScale = 0.0f;
+
+        if (m_StorePanel != null)
+            m_StorePanel.SetActive(true);
+
+        if (ExitBtn != null)
+            ExitBtn.onClick.AddListener(() =>
+            {
+                m_StorePanel.SetActive(false);
+                Time.timeScale = 1.0f;
+            });
+
+        if (m_StoreGold != null)
+            m_StoreGold.text = GlobalValue.g_UserGold.ToString();
+
+    }
+
+    public void BuySkillItem(SkillType a_SkType)
+    {
+        if (a_SkType < SkillType.Skill_0 || SkillType.SkCount < a_SkType)
+            return;
+        int a_Cost = 0;
+
+        if (a_SkType == SkillType.Skill_0)
+        {
+            a_Cost = 500;
+        }
+        else if (a_SkType == SkillType.Skill_1)
+        {
+            a_Cost = 500;
+        }
+
+        GlobalValue.g_UserGold -= a_Cost;
+
+        PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
+        //if ((int)a_SkType < m_ItemSlot.Length)
+        //    m_ItemSlot[(int)a_SkType].m_BuyBtn.onClick.AddListener(() =>
+        //    {
+        //        int a_SkIdx = (int)a_SkType;    //SkillType 인덱스로 변환
+        //        GlobalValue.g_SkillCount[a_SkIdx]++;
+        //        GlobalValue.g_UserGold -= a_Cost;
+
+        //        //변동사항 로컬에 저장
+        //        string a_Skill = "SkItem_" + (a_SkIdx).ToString();
+        //        PlayerPrefs.SetInt(a_Skill, GlobalValue.g_SkillCount[a_SkIdx]);
+        //        PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
+        //    });
+    }
+
+    void RefreshGameUI()
+    {
+        for(int i = 0; i <GlobalValue.g_SkillCount.Length; i++)
+        {
+            if (m_SkInvenNode.Length <= i)
+                return;
+
+            m_SkInvenNode[i].m_SkType = (SkillType)i;
+            m_SkInvenNode[i].m_SkCountText.text = GlobalValue.g_SkillCount[i].ToString();
+        }
     }
 }

@@ -16,8 +16,17 @@ public class TitleMgr : MonoBehaviour
         if (m_StartGameBtn != null)
             m_StartGameBtn.onClick.AddListener(()=>
             {
-                SceneManager.LoadScene("Level1");
-                SceneManager.LoadScene("GameScene", LoadSceneMode.Additive);
+                if (Fade_Mgr.Inst != null && Fade_Mgr.Inst.IsFadeOut == true)
+                    Fade_Mgr.Inst.SceneOut("Level1");
+
+                else
+                    SceneManager.LoadScene("Level1");
+            });
+
+        if (m_GameEndBtn != null)
+            m_GameEndBtn.onClick.AddListener(() =>
+            {
+                Application.Quit();
             });
     }
 
