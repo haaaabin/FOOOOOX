@@ -8105,9 +8105,14 @@ MonoBehaviour:
   m_DamageRoot: {fileID: 1550618029450412704, guid: 33770d6c8f516c14485018e7df1bcdb5, type: 3}
   m_StoreBtn: {fileID: 0}
   m_StorePanel: {fileID: 0}
-  m_ExitBtn: {fileID: 0}
+  ExitBtn: {fileID: 0}
+  m_StoreGold: {fileID: 0}
+  m_ItemSlot: []
   m_CoinItem: {fileID: 0}
   m_GoldText: {fileID: 0}
+  m_SkInvenNode: []
+  m_ConfigBtn: {fileID: 0}
+  m_ConfigPanel: {fileID: 0}
 --- !u!1 &783698758
 GameObject:
   m_ObjectHideFlags: 0
@@ -20916,7 +20921,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1068993821}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 20, y: -3.02, z: 0}
+  m_LocalPosition: {x: -6.77, y: -2.29, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -20963,8 +20968,8 @@ MonoBehaviour:
   m_BulletObj: {fileID: 311816974986692086, guid: eb8b61d7845917642a8fb170f8d9af8c, type: 3}
   m_shootPos: {fileID: 1796922284}
   m_HpBarImg: {fileID: 144463543}
-  m_HP: 500
-  m_curHP: 500
+  initHp: 500
+  hp: 500
   ShieldObj: {fileID: 0}
 --- !u!1 &1073293764
 GameObject:
@@ -21316,7 +21321,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ExitBtn: {fileID: 237458434}
-  BuyBtn: {fileID: 2083716777}
+  m_StorePanel: {fileID: 0}
+  m_StoreGold: {fileID: 0}
+  m_ItemSlot: []
 --- !u!1 &1214423069
 GameObject:
   m_ObjectHideFlags: 0
@@ -24402,17 +24409,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 4075397321146506244, guid: 4849a1b830aceda419aab05cfc7b5098, type: 3}
   m_PrefabInstance: {fileID: 2083716775}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2083716777 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4075397321013963851, guid: 4849a1b830aceda419aab05cfc7b5098, type: 3}
-  m_PrefabInstance: {fileID: 2083716775}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &2132128168
 GameObject:
   m_ObjectHideFlags: 0

@@ -65,14 +65,14 @@ public class PlayerCtrl : MonoBehaviour
 
     void FixedUpdate()
     {
- 
     }
     // Update is called once per frame
+
     void Update()
     {
 
         if (!isDie)
-        { 
+        {
             //이동
             dirX = Input.GetAxis("Horizontal");
             transform.Translate(dirX * Time.deltaTime * moveSpeed, 0, 0);
@@ -99,7 +99,8 @@ public class PlayerCtrl : MonoBehaviour
                 }
 
             }
- 
+
+
             UpdateAnimState();
         }
         LimitMove();
@@ -109,9 +110,8 @@ public class PlayerCtrl : MonoBehaviour
 
     void LimitMove()
     {
-        Vector2 dir = transform.position;
-        if (dir.x <= -10.3f)
-            dir.x = -10.3f;
+        if (transform.position.x <= -10.5f)
+            transform.position = new Vector2(-10.5f, transform.position.y);
     }
     bool IsGrounded()
     {
@@ -196,6 +196,8 @@ public class PlayerCtrl : MonoBehaviour
         mon.TakeDemaged();     
     }
 
+    public bool isLadder;
+
     void OnTriggerEnter2D(Collider2D coll)
     {
         if(coll.gameObject.name.Contains("Coin"))
@@ -213,6 +215,10 @@ public class PlayerCtrl : MonoBehaviour
         {
             coll.isTrigger = true;
         }
+        else if(coll.gameObject.CompareTag("ladder"))
+        {
+            isLadder = true;
+        }
     }
 
     void OnTriggerExit2D(Collider2D coll)
@@ -220,6 +226,11 @@ public class PlayerCtrl : MonoBehaviour
         if (coll.gameObject.name.Contains("Wall"))
         { 
             coll.isTrigger = false;
+        }
+        else if(coll.gameObject.CompareTag("ladder"))
+        {
+            isLadder = false;
+
         }
     }
 

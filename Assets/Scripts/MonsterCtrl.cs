@@ -16,7 +16,7 @@ public enum MonType
     Walk_Monster,
     Run_Monster,
     plant,
-    Fly_Monster,
+    attack_Monster,
     Snail,
     Boss
 }
@@ -44,15 +44,22 @@ public class MonsterCtrl : MonoBehaviour
 
     public GameObject m_HpBarObj = null;
     public Image m_hpBarImg = null;
-    float m_HP = 100;
-    float m_curHp = 100;
+    float m_HP = 400;
+    float m_curHp = 400;
+
+    private Transform playerTr;
 
     [Header("--- Plant Monster --- ")]
     public GameObject m_MonBullet = null;
     public GameObject m_shootPos = null;
     public float Bulletspeed = 10f;
 
-    public float turn = 1;
+
+    [Header("--- Trunk Monster --- ")]
+    public GameObject m_TMonBullet = null;
+    public GameObject m_TshootPos = null;
+
+    public int turn = 1;
 
     bool isChange;
 
@@ -74,6 +81,8 @@ public class MonsterCtrl : MonoBehaviour
 
     public GameObject m_bossBullet = null;
     public GameObject m_BShootPos = null;
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -85,12 +94,22 @@ public class MonsterCtrl : MonoBehaviour
         Player = GameObject.FindObjectOfType<PlayerCtrl>();
         capcoll = GetComponent<CapsuleCollider2D>();
 
-        if(m_MonType == MonType.Boss)
+        playerTr = GameObject.FindWithTag("Player").GetComponent<Transform>();
+
+        if (m_MonType == MonType.Snail)
+        {
+            m_HP = 200.0f;
+            m_curHp = m_HP;
+        }
+
+        if (m_MonType == MonType.Boss)
         {
             GameMgr.m_gameLevel = GameLevel.Boss;
             m_Hp = 3000.0f;
             m_curHp = m_Hp;          
         }
+
+ 
     }
 
     // Update is called once per frame
@@ -104,6 +123,8 @@ public class MonsterCtrl : MonoBehaviour
                 RunMonster_AI();
             else if (m_MonType == MonType.plant)
                 Plant_AI();
+            else if (m_MonType == MonType.attack_Monster)
+                Attack_AI();
             else if (m_MonType == MonType.Snail)
                 Snail_AI();
             else if (m_MonType == MonType.Boss)
@@ -197,16 +218,10 @@ public class MonsterCtrl : MonoBehaviour
             //}
             //shootTime = 0.0f;
 
-            
-
-
-
-
-
         }
     }
 
-        void CheckPlatform()
+    void CheckPlatform()
     {
         Vector2 frontVec = new Vector2(rigid.position.x + turn, rigid.position.y - 0.8f);
         Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
@@ -238,15 +253,18 @@ public class MonsterCtrl : MonoBehaviour
         rigid.velocity = new Vector2(turn * RunSpeed, rigid.velocity.y);
         CheckPlatform();
     }
+
     void Plant_AI()
     {
-        Collider2D a_Coll = Physics2D.OverlapBox(transform.position, new Vector2(14, 4), 0, LayerMask.GetMask("Player"));
+        Collider2D a_Coll = Physics2D.OverlapBox(transform.position, new Vector2(14, 10), 0, LayerMask.GetMask("Player"));
 
         if (a_Coll != null)
         {
+ 
+            anim.SetBool("Attack", true);
+
             if (a_Coll.transform.position.x < transform.position.x)  //Left
             {
-                anim.SetBool("Attack", true);
                 sprite.flipX = false;
                 shootTime += Time.deltaTime;
                 if (shootDelay <= shootTime)
@@ -284,6 +302,55 @@ public class MonsterCtrl : MonoBehaviour
         }
     }
 
+    void Attack_AI()
+    {
+        rigid.velocity = new Vector2(turn * MoveSpeed, rigid.velocity.y);
+        CheckPlatform();
+
+        Collider2D a_Coll = Physics2D.OverlapBox(transform.position, new Vector2(20, 10), 0, LayerMask.GetMask("Player"));
+        if (a_Coll != null)
+        {
+            MoveSpeed = 0f;
+            anim.SetBool("Attack", true);
+
+            if (a_Coll.transform.position.x < transform.position.x)  //Left
+            {
+                sprite.flipX = false;
+                shootTime += Time.deltaTime;
+                if (0.55f <= shootTime)
+                {
+                    if (m_TMonBullet != null)
+                    {
+                        GameObject a_NewObj = Instantiate(m_TMonBullet) as GameObject;
+                        BulletCtrl a_Bullet = a_NewObj.GetComponent<BulletCtrl>();
+                        a_Bullet.BulletSpawn(m_TshootPos.transform.position, Vector3.left, Bulletspeed);
+                    }
+                    shootTime = 0f;
+                }
+            }
+            else //Right
+            {
+                sprite.flipX = true;
+                shootTime += Time.deltaTime;
+                if (0.55f <= shootTime)
+                {
+                    if (m_TMonBullet != null)
+                    {
+                        GameObject a_NewObj = Instantiate(m_TMonBullet) as GameObject;
+                        BulletCtrl a_Bullet = a_NewObj.GetComponent<BulletCtrl>();
+                        a_Bullet.BulletSpawn(m_TshootPos.transform.position, Vector3.right, Bulletspeed);
+                    }
+                    shootTime = 0f;
+                }
+            }
+        }
+        else
+        {
+            MoveSpeed = 3f;
+            anim.SetBool("Attack", false);
+        }
+    }
+
     //void WalkJumpMonster_AI()
     //{
     //    rigid.velocity = new Vector2(nextMove * 2f, rigid.velocity.y);
@@ -297,7 +364,7 @@ public class MonsterCtrl : MonoBehaviour
     //        CancelInvoke();
     //        Invoke("Think", 3);
     //    }
-        
+
     //}
 
     //void Think()
@@ -333,7 +400,7 @@ public class MonsterCtrl : MonoBehaviour
         }
     }
 
-    public void TakeDemaged(float a_Value = 50)
+    public void TakeDemaged(float a_Value = 100)
     {
         anim.SetTrigger("Hit");
 

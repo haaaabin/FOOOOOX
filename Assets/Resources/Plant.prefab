@@ -299,7 +299,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &3248229391212781736
 RectTransform:
   m_ObjectHideFlags: 0
@@ -483,11 +483,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_MonType: 2
-  PlayerTr: {fileID: 0}
   MoveSpeed: 3
+  m_CurHp: 100
   nextMove: 0
   m_HpBarObj: {fileID: 3248229391212781737}
   m_hpBarImg: {fileID: 3248229389949448354}
   m_MonBullet: {fileID: 7557207322260485127, guid: 230f6d754a50be04f80156792a8845e7, type: 3}
   m_shootPos: {fileID: 3248229390344489152}
   Bulletspeed: 10
+  m_TMonBullet: {fileID: 0}
+  m_TshootPos: {fileID: 0}
+  turn: 1
+  m_bosshpBarObj: {fileID: 0}
+  m_bosshpBarImg: {fileID: 0}
+  ballPrefab: {fileID: 0}
+  m_bossBullet: {fileID: 0}
+  m_BShootPos: {fileID: 0}
