@@ -20,7 +20,10 @@ public class TitleMgr : MonoBehaviour
                     Fade_Mgr.Inst.SceneOut("Level1");
 
                 else
+                {
                     SceneManager.LoadScene("Level1");
+                    SceneManager.LoadScene("GameScene", LoadSceneMode.Additive);
+                }
             });
 
         if (m_GameEndBtn != null)
