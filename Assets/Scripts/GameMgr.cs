@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public enum GameLevel
@@ -22,11 +23,7 @@ public class GameMgr : MonoBehaviour
     // ---- 상점 -----
     [Header(" ---- Store ----- ")]
     public Button m_StoreBtn = null;
-    public GameObject m_StorePanel = null;
-    public Button ExitBtn = null;
-    public Text m_StoreGold = null;
-
-    public ItemSlot[] m_ItemSlot;
+    public GameObject m_StoreBoxObj = null;
 
     public GameObject m_CoinItem = null;
     public Text m_GoldText = null;
@@ -36,10 +33,13 @@ public class GameMgr : MonoBehaviour
 
     public SkInvenNode[] m_SkInvenNode;     //Skill 인벤토리 연결 변수
 
+    [HideInInspector] public SkillType m_SkType = SkillType.SkCount;
+
     //--- 설정 ----
     [Header("---- Config -----")]
     public Button m_ConfigBtn = null;
-    public GameObject m_ConfigPanel = null;
+    public GameObject Canvas_Dialog = null;
+    public GameObject m_ConfigBoxObj = null;
     
     public static GameMgr Inst = null;
 
@@ -59,7 +59,30 @@ public class GameMgr : MonoBehaviour
         RefreshGameUI();
 
         if (m_StoreBtn != null)
-            m_StoreBtn.onClick.AddListener(StoreBox);
+            m_StoreBtn.onClick.AddListener(()=>
+            {
+                if (m_StoreBoxObj == null)
+                    m_StoreBoxObj = Resources.Load("StoreBox") as GameObject;
+
+                GameObject a_StoreObj = Instantiate(m_StoreBoxObj) as GameObject;
+                a_StoreObj.transform.SetParent(Canvas_Dialog.transform, false);
+                a_StoreObj.GetComponent<StoreBox>();
+
+                Time.timeScale = 0.0f;
+            });
+
+        if (m_ConfigBtn != null)
+            m_ConfigBtn.onClick.AddListener(() =>
+            {
+                if (m_ConfigBoxObj == null)
+                    m_ConfigBoxObj = Resources.Load("ConfigBox") as GameObject;
+
+                GameObject a_CfgObj = Instantiate(m_ConfigBoxObj) as GameObject;
+                a_CfgObj.transform.SetParent(Canvas_Dialog.transform, false);
+                a_CfgObj.GetComponent<ConfigBox>();
+
+                Time.timeScale = 0.0f;
+            });
          
         m_Player = GameObject.FindObjectOfType<PlayerCtrl>();
     }
@@ -109,7 +132,6 @@ public class GameMgr : MonoBehaviour
 
     }
 
-
     public void SpawnCoin(Vector3 a_Pos)
     {
         if (m_CoinItem == null)
@@ -135,56 +157,6 @@ public class GameMgr : MonoBehaviour
         PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
     }
 
-    public void StoreBox()
-    {
-        Time.timeScale = 0.0f;
-
-        if (m_StorePanel != null)
-            m_StorePanel.SetActive(true);
-
-        if (ExitBtn != null)
-            ExitBtn.onClick.AddListener(() =>
-            {
-                m_StorePanel.SetActive(false);
-                Time.timeScale = 1.0f;
-            });
-
-        if (m_StoreGold != null)
-            m_StoreGold.text = GlobalValue.g_UserGold.ToString();
-
-    }
-
-    public void BuySkillItem(SkillType a_SkType)
-    {
-        if (a_SkType < SkillType.Skill_0 || SkillType.SkCount < a_SkType)
-            return;
-        int a_Cost = 0;
-
-        if (a_SkType == SkillType.Skill_0)
-        {
-            a_Cost = 500;
-        }
-        else if (a_SkType == SkillType.Skill_1)
-        {
-            a_Cost = 500;
-        }
-
-        GlobalValue.g_UserGold -= a_Cost;
-
-        PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
-        //if ((int)a_SkType < m_ItemSlot.Length)
-        //    m_ItemSlot[(int)a_SkType].m_BuyBtn.onClick.AddListener(() =>
-        //    {
-        //        int a_SkIdx = (int)a_SkType;    //SkillType 인덱스로 변환
-        //        GlobalValue.g_SkillCount[a_SkIdx]++;
-        //        GlobalValue.g_UserGold -= a_Cost;
-
-        //        //변동사항 로컬에 저장
-        //        string a_Skill = "SkItem_" + (a_SkIdx).ToString();
-        //        PlayerPrefs.SetInt(a_Skill, GlobalValue.g_SkillCount[a_SkIdx]);
-        //        PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
-        //    });
-    }
 
     void RefreshGameUI()
     {
@@ -197,4 +169,6 @@ public class GameMgr : MonoBehaviour
             m_SkInvenNode[i].m_SkCountText.text = GlobalValue.g_SkillCount[i].ToString();
         }
     }
+
 }
+

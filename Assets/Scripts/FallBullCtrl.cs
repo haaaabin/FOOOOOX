@@ -5,7 +5,7 @@ using UnityEngine;
 public class FallBullCtrl : MonoBehaviour
 {
     [HideInInspector] public GameObject player;
-    [HideInInspector] public float m_DownSpeed = 10f;
+    [HideInInspector] public float m_DownSpeed = 20f;
 
     [HideInInspector] public float spawn = 2.0f;
     [HideInInspector] public float delta = 0.0f;

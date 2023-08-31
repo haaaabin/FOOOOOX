@@ -66,7 +66,7 @@ public class MonsterCtrl : MonoBehaviour
     float delay_time = 0;
 
     //Boss
-    BossState m_BossState = BossState.Boss_Idle;
+    BossState m_BossState = BossState.Boss_Move;
     int m_ShootCount = 0;
     public GameObject m_bosshpBarObj = null;
     public Image m_bosshpBarImg = null;
@@ -134,16 +134,15 @@ public class MonsterCtrl : MonoBehaviour
 
     void Boss_AI()
     {
-        Collider2D a_Coll = Physics2D.OverlapBox(transform.position, new Vector2(14, 14), 0, LayerMask.GetMask("Player"));
-        if(a_Coll != null)
+        Collider2D a_Coll = Physics2D.OverlapBox(transform.position, new Vector2(20, 20), 0, LayerMask.GetMask("Player"));
+        if (a_Coll != null)
         {
-            m_BossState = BossState.Boss_Move;
             if (m_bosshpBarObj != null)
-                m_bosshpBarObj.SetActive(true);
+                m_bosshpBarObj.SetActive(true);          
         }
 
         if (m_BossState == BossState.Boss_Move)
-        {          
+        {
             rigid.velocity = new Vector2(-turn * MoveSpeed, rigid.velocity.y);
 
             Vector2 frontVec = new Vector2(rigid.position.x + (-turn * 2.8f), rigid.position.y);
@@ -157,19 +156,17 @@ public class MonsterCtrl : MonoBehaviour
                 sprite.flipX = turn == -1;
 
             delay_time += Time.deltaTime;
-            if (delay_time >= 5.0f)    //10초 뒤에 돌 떨어트리기
-            {   
-                delay_time = 0.0f;           
-                //m_BossState = BossState.Fall_Bull;
-                m_BossState = BossState.Boss_Attack;
+            if (delay_time >= 10.0f)
+            {
+                delay_time = 0f;
+                shootTime = 0.5f;
+                m_BossState = BossState.Fall_Bull;
             }
-            
-                           
         }
         else if (m_BossState == BossState.Fall_Bull)
         {
-            delta += Time.deltaTime;
-            if (delta > spawn)
+            shootTime -= Time.deltaTime;
+            if (shootTime <= 0.0f)
             {
                 GameObject go = Instantiate(ballPrefab) as GameObject;
 
@@ -177,49 +174,146 @@ public class MonsterCtrl : MonoBehaviour
                 go.transform.position = new Vector3(dropPosX, 6.2f, 0.0f);
 
                 fallCount++;
-                if (fallCount > 9)  //10개 딸
+                if (fallCount < 12)
+                    shootTime = 0.5f;   //공 떨어트리기 
+                else
                 {
                     fallCount = 0;
-                    m_BossState = BossState.Boss_Move;
+                    shootTime = 1f;
+                    delay_time = 1;
+                    m_BossState = BossState.Boss_Attack;
                 }
-                delta = 0.0f;
             }
 
         }
         else if (m_BossState == BossState.Boss_Attack)
         {
-            anim.SetTrigger("Attack");
-
-            shootTime += Time.deltaTime;
-            if(shootTime > 5)
+            delay_time -= Time.deltaTime;
+            if(delay_time <= 0.0f)
             {
-                shootTime = 0.0f;
-                GameObject a_NewObj = Instantiate(m_bossBullet) as GameObject;
-                BulletCtrl a_BulletSc = a_NewObj.GetComponent<BulletCtrl>();
-                a_BulletSc.BulletSpawn(m_BShootPos.transform.position, Vector3.left, Bulletspeed);
+                sprite.color = new Color(1, 0, 0, 1);
+
+                anim.SetBool("Attack", true);
+
+                rigid.velocity = new Vector2(-turn * 5, rigid.velocity.y);
+                Vector2 frontVec = new Vector2(rigid.position.x + (-turn * 2.8f), rigid.position.y);
+                Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
+                RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1, LayerMask.GetMask("Wall"));
+                if (rayGHit.collider != null)
+                {
+                    turn *= -1;
+                }
+                if (turn != 0)
+                    sprite.flipX = turn == -1;
+
+                shootTime -= Time.deltaTime;
+                if (shootTime <= 0.0f)
+                {
+                    MonBulletCtrl a_BulletSc = null;
+
+                    Vector3 a_Pos;
+                    GameObject a_CloneObj = null;
+                    for (int i = 0; i < 2; i++)
+                    {
+                        a_CloneObj = (GameObject)Instantiate(m_bossBullet);
+                        a_Pos = m_BShootPos.transform.position;
+                        a_Pos.y -= 0.4f - (i * 1.2f);
+                        a_CloneObj.transform.position = a_Pos;
+                        a_BulletSc = a_CloneObj.GetComponent<MonBulletCtrl>();
+                        a_BulletSc.MBulletSpawn(a_CloneObj.transform.position, Vector3.left * turn, Bulletspeed);
+                    }
+
+                    m_ShootCount++;
+                    if (m_ShootCount < 19)
+                        shootTime = 0.5f;
+                    else
+                    {
+                        sprite.color = new Color(1, 1, 1, 1);
+
+                        anim.SetBool("Attack", false);
+                        m_ShootCount = 0;
+                        shootTime = 0.7f;
+                        m_BossState = BossState.Boss_Move;
+                    }
+                }
             }
-            //shootTime += Time.deltaTime;
-            //if(shootTime < shootDelay)
-            //{
-            //    BulletCtrl a_BulletSc = null;
-
-            //    Vector3 a_Pos;
-            //    GameObject a_CloneObj = null;
-            //    for(int i = 0; i < 2; i++)
-            //    {
-            //        a_CloneObj = (GameObject)Instantiate(ballPrefab);
-            //        a_Pos = m_BShootPos.transform.position;
-            //        a_Pos.y += 0.2f - (i * 0.4f);
-            //        a_CloneObj.transform.position = a_Pos;
-            //        a_BulletSc = a_CloneObj.GetComponent<BulletCtrl>();
-            //        a_BulletSc.BulletSpawn(a_CloneObj.transform.position, Vector3.left, Bulletspeed);
-
-            //    }
-            //}
-            //shootTime = 0.0f;
-
+           
         }
     }
+
+        //delay_time += Time.deltaTime;
+        //if (delay_time >= 5.0f)    //10초 뒤에 돌 떨어트리기
+        //{
+        //    anim.SetBool("Attack", true);
+
+        //    shootTime += Time.deltaTime;
+        //    if (shootTime > 2)
+        //    {
+        //        shootTime = 0.0f;
+        //        GameObject a_NewObj = Instantiate(m_bossBullet) as GameObject;
+        //        BulletCtrl a_BulletSc = a_NewObj.GetComponent<BulletCtrl>();
+        //        a_BulletSc.BulletSpawn(m_BShootPos.transform.position, Vector3.left * turn, Bulletspeed);
+        //    }
+        //    delay_time = 0.0f;     
+
+        //    //sState = BossState.Fall_Bull;               
+        //}
+
+    
+    //else if (m_BossState == BossState.Fall_Bull)
+    //{
+    //    delta += Time.deltaTime;
+    //    if (delta > spawn)
+    //    {
+    //        GameObject go = Instantiate(ballPrefab) as GameObject;
+
+    //        int dropPosX = Random.Range(23, 38);
+    //        go.transform.position = new Vector3(dropPosX, 6.2f, 0.0f);
+
+    //        fallCount++;
+    //        if (fallCount > 12) 
+    //        {
+    //            fallCount = 0;
+    //            m_BossState = BossState.Boss_Attack;
+    //        }
+    //        delta = 0.0f;
+    //    }
+
+    //}
+    //else if (m_BossState == BossState.Boss_Attack)
+    //{
+    //    anim.SetBool("Attack",true);
+
+    //    shootTime += Time.deltaTime;
+    //    if(shootTime > 2)
+    //    {
+    //        shootTime = 0.0f;
+    //        GameObject a_NewObj = Instantiate(m_bossBullet) as GameObject;
+    //        BulletCtrl a_BulletSc = a_NewObj.GetComponent<BulletCtrl>();
+    //        a_BulletSc.BulletSpawn(m_BShootPos.transform.position, Vector3.left, Bulletspeed);
+    //    }
+    //    //shootTime += Time.deltaTime;
+    //    //if(shootTime < shootDelay)
+    //    //{
+    //    //    BulletCtrl a_BulletSc = null;
+
+    //    //    Vector3 a_Pos;
+    //    //    GameObject a_CloneObj = null;
+    //    //    for(int i = 0; i < 2; i++)
+    //    //    {
+    //    //        a_CloneObj = (GameObject)Instantiate(ballPrefab);
+    //    //        a_Pos = m_BShootPos.transform.position;
+    //    //        a_Pos.y += 0.2f - (i * 0.4f);
+    //    //        a_CloneObj.transform.position = a_Pos;
+    //    //        a_BulletSc = a_CloneObj.GetComponent<BulletCtrl>();
+    //    //        a_BulletSc.BulletSpawn(a_CloneObj.transform.position, Vector3.left, Bulletspeed);
+
+    //    //    }
+    //    //}
+    //    //shootTime = 0.0f;
+
+    //}
+
 
     void CheckPlatform()
     {
@@ -272,8 +366,8 @@ public class MonsterCtrl : MonoBehaviour
                     if (m_MonBullet != null)
                     {
                         GameObject a_NewObj = Instantiate(m_MonBullet) as GameObject;
-                        BulletCtrl a_Bullet = a_NewObj.GetComponent<BulletCtrl>();
-                        a_Bullet.BulletSpawn(m_shootPos.transform.position, Vector3.left, Bulletspeed);
+                        MonBulletCtrl a_Bullet = a_NewObj.GetComponent<MonBulletCtrl>();
+                        a_Bullet.MBulletSpawn(m_shootPos.transform.position, Vector3.left, Bulletspeed);
                     }
                     shootTime = 0f;
                 }
@@ -289,8 +383,8 @@ public class MonsterCtrl : MonoBehaviour
                     if (m_MonBullet != null)
                     {
                         GameObject a_NewObj = Instantiate(m_MonBullet) as GameObject;
-                        BulletCtrl a_Bullet = a_NewObj.GetComponent<BulletCtrl>();
-                        a_Bullet.BulletSpawn(m_shootPos.transform.position, Vector3.right, Bulletspeed);
+                        MonBulletCtrl a_Bullet = a_NewObj.GetComponent<MonBulletCtrl>();
+                        a_Bullet.MBulletSpawn(m_shootPos.transform.position, Vector3.right, Bulletspeed);
                     }
                     shootTime = 0f;
                 }
@@ -322,8 +416,8 @@ public class MonsterCtrl : MonoBehaviour
                     if (m_TMonBullet != null)
                     {
                         GameObject a_NewObj = Instantiate(m_TMonBullet) as GameObject;
-                        BulletCtrl a_Bullet = a_NewObj.GetComponent<BulletCtrl>();
-                        a_Bullet.BulletSpawn(m_TshootPos.transform.position, Vector3.left, Bulletspeed);
+                        MonBulletCtrl a_Bullet = a_NewObj.GetComponent<MonBulletCtrl>();
+                        a_Bullet.MBulletSpawn(m_TshootPos.transform.position, Vector3.left, Bulletspeed);
                     }
                     shootTime = 0f;
                 }
@@ -337,8 +431,8 @@ public class MonsterCtrl : MonoBehaviour
                     if (m_TMonBullet != null)
                     {
                         GameObject a_NewObj = Instantiate(m_TMonBullet) as GameObject;
-                        BulletCtrl a_Bullet = a_NewObj.GetComponent<BulletCtrl>();
-                        a_Bullet.BulletSpawn(m_TshootPos.transform.position, Vector3.right, Bulletspeed);
+                        MonBulletCtrl a_Bullet = a_NewObj.GetComponent<MonBulletCtrl>();
+                        a_Bullet.MBulletSpawn(m_TshootPos.transform.position, Vector3.right, Bulletspeed);
                     }
                     shootTime = 0f;
                 }
@@ -414,7 +508,7 @@ public class MonsterCtrl : MonoBehaviour
 
         if(m_MonType == MonType.Snail)
         {
-            if (m_curHp == 50)
+            if (m_curHp == 100)
             {
                 anim.SetTrigger("Hit");
                 anim.SetBool("ChangeShell", true);

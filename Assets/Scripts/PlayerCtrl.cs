@@ -187,6 +187,12 @@ public class PlayerCtrl : MonoBehaviour
             PlayerTakeDemaged(50);
             OnDamaged(coll.transform.position);
         }
+
+        if(coll.gameObject.layer == LayerMask.NameToLayer("Ball"))
+        {
+            PlayerTakeDemaged(50);
+            OnDamaged(coll.transform.position);
+        }
     }
 
     void OnAttack(Transform enemy)
