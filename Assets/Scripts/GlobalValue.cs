@@ -31,6 +31,6 @@ public class GlobalValue
         }
 
         
-       // PlayerPrefs.SetInt("UserGold", 0);
+       PlayerPrefs.SetInt("UserGold", 10000);
     }
 }

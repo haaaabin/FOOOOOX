@@ -104,7 +104,7 @@ public class MonsterCtrl : MonoBehaviour
 
         if (m_MonType == MonType.Boss)
         {
-            GameMgr.m_gameLevel = GameLevel.Boss;
+            GameMgr.m_gameState = GameState.Boss;
             m_Hp = 3000.0f;
             m_curHp = m_Hp;          
         }

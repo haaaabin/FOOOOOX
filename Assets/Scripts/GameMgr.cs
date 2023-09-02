@@ -2,12 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public enum GameLevel
+public enum GameState
 {
     Level1,
-    Boss
+    Boss,
+    GameOver
 }
 
 public class GameMgr : MonoBehaviour
@@ -31,7 +33,6 @@ public class GameMgr : MonoBehaviour
 
     PlayerCtrl m_Player = null;
 
-    public SkInvenNode[] m_SkInvenNode;     //Skill 인벤토리 연결 변수
 
     [HideInInspector] public SkillType m_SkType = SkillType.SkCount;
 
@@ -43,7 +44,19 @@ public class GameMgr : MonoBehaviour
     
     public static GameMgr Inst = null;
 
-    public static GameLevel m_gameLevel = GameLevel.Level1;
+    public static GameState m_gameState = GameState.Level1;
+
+    [Header("---- GameOver -----")]
+    public GameObject GameOverPanel = null;
+    public Button m_ReplayBtn = null;
+    public Button m_GameExitBtn = null;
+
+    [Header("---- Skill Cool Timer -----")]
+    public GameObject m_SkCoolPrefab = null;
+    public Transform m_SkCoolRoot = null;
+    public SkInvenNode[] m_SkInvenNode;     //Skill 인벤토리 연결 변수
+
+
 
     void Awake()
     {
@@ -85,22 +98,28 @@ public class GameMgr : MonoBehaviour
             });
          
         m_Player = GameObject.FindObjectOfType<PlayerCtrl>();
+
+        Sound_Mgr.Instance.PlayBGM("hurry_up_and_run", 1.0f);
     }
     
     // Update is called once per frame
     void Update()
     {
-        //--단축키 이용으로 스킬 사용
-        if(Input.GetKeyDown(KeyCode.Alpha1) ||
-            Input.GetKeyDown(KeyCode.Keypad1))
+        if(!(m_gameState == GameState.GameOver))
         {
-            UseSkill_Key(SkillType.Skill_0);
+            //--단축키 이용으로 스킬 사용
+            if (Input.GetKeyDown(KeyCode.Alpha1) ||
+                Input.GetKeyDown(KeyCode.Keypad1))
+            {
+                UseSkill_Key(SkillType.Skill_0);
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha2) ||
+                Input.GetKeyDown(KeyCode.Keypad2))
+            {
+                UseSkill_Key(SkillType.Skill_1);
+            }
         }
-        else if (Input.GetKeyDown(KeyCode.Alpha2) ||
-            Input.GetKeyDown(KeyCode.Keypad2))
-        {
-            UseSkill_Key(SkillType.Skill_1);
-        }
+        
     }
 
     public void UseSkill_Key(SkillType a_SkType)
@@ -115,6 +134,14 @@ public class GameMgr : MonoBehaviour
             m_SkInvenNode[(int)a_SkType].m_SkCountText.text =
                         GlobalValue.g_SkillCount[(int)a_SkType].ToString();
 
+    }
+
+    public void SkillTimeMethod(float a_Time, float a_Dur)
+    {
+        GameObject obj = Instantiate(m_SkCoolPrefab) as GameObject;
+        obj.transform.SetParent(m_SkCoolRoot, false);
+        SkillCoolCtrl skNode = obj.GetComponent<SkillCoolCtrl>();
+        skNode.InitState(a_Time, a_Dur);
     }
 
     public void DamageText(float a_Value, Vector3 a_Pos, Color a_color)
@@ -158,7 +185,7 @@ public class GameMgr : MonoBehaviour
     }
 
 
-    void RefreshGameUI()
+    public void RefreshGameUI()
     {
         for(int i = 0; i <GlobalValue.g_SkillCount.Length; i++)
         {
@@ -169,6 +196,37 @@ public class GameMgr : MonoBehaviour
             m_SkInvenNode[i].m_SkCountText.text = GlobalValue.g_SkillCount[i].ToString();
         }
     }
+    
+    public void GameOver()
+    {
+        m_gameState = GameState.GameOver;
 
+        PlayerPrefs.DeleteAll();
+
+        if (GameOverPanel != null && GameOverPanel.activeSelf == false)
+            GameOverPanel.SetActive(true);
+
+        if (m_ReplayBtn != null)
+            m_ReplayBtn.onClick.AddListener(() =>
+            {
+                if (Fade_Mgr.Inst != null && Fade_Mgr.Inst.IsFadeOut == true)
+                    Fade_Mgr.Inst.SceneOut("Level1");
+                else
+                {
+                    SceneManager.LoadScene("Level1");
+                    SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
+                }
+            });
+
+        if (m_GameExitBtn != null)
+            m_GameExitBtn.onClick.AddListener(() =>
+            {
+                if (Fade_Mgr.Inst != null && Fade_Mgr.Inst.IsFadeOut == true)
+                    Fade_Mgr.Inst.SceneOut("TitleScene");
+                else
+                    SceneManager.LoadScene("TitleScene");
+            });
+
+    }
 }
 

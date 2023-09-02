@@ -46,6 +46,7 @@ public class PlayerCtrl : MonoBehaviour
     float m_SdDuration = 10.0f; //15초 동안 발동
     public GameObject ShieldObj = null;
 
+
     // Start is called before the first frame update
     void Start()
     {
@@ -59,8 +60,6 @@ public class PlayerCtrl : MonoBehaviour
         isDie = false;
 
         groundMask = 1 << LayerMask.NameToLayer("Platform") | 1 << LayerMask.NameToLayer("AirPlatform");
-
-
     }
 
     void FixedUpdate()
@@ -98,14 +97,16 @@ public class PlayerCtrl : MonoBehaviour
                     a_Bullet.BulletSpawn(m_shootPos.transform.position, Vector3.left, BulletSpeed);
                 }
 
+                Sound_Mgr.Instance.PlayGUISound("gun", 1.0f);
             }
 
-
             UpdateAnimState();
-        }
-        LimitMove();
 
-        SkillUpdate();
+            LimitMove();
+
+            SkillUpdate();
+        }
+
     }
 
     void LimitMove()
@@ -152,7 +153,8 @@ public class PlayerCtrl : MonoBehaviour
         {
             PlayerTakeDemaged(10);
             OnDamaged(coll.transform.position);
-            
+            Sound_Mgr.Instance.PlayGUISound("Hit", 1.0f);
+
         }
         if(coll.gameObject.tag == "Snail")
         {
@@ -167,6 +169,7 @@ public class PlayerCtrl : MonoBehaviour
                 OnDamaged(coll.transform.position);
 
             }
+            Sound_Mgr.Instance.PlayGUISound("Hit", 1.0f);
         }
 
         if(coll.gameObject.tag == "M_Bullet")   
@@ -174,25 +177,35 @@ public class PlayerCtrl : MonoBehaviour
             Destroy(coll.gameObject);
             PlayerTakeDemaged(50);
             OnDamaged(coll.transform.position);
+            Sound_Mgr.Instance.PlayGUISound("Hit", 1.0f);
         }
 
         if(coll.gameObject.layer == LayerMask.NameToLayer("Trap"))
         {
             PlayerTakeDemaged(50);
             OnDamaged(coll.transform.position);
+            Sound_Mgr.Instance.PlayGUISound("Hit", 1.0f);
         }
 
         if (coll.gameObject.tag == "Boss")
         {
             PlayerTakeDemaged(50);
             OnDamaged(coll.transform.position);
+            Sound_Mgr.Instance.PlayGUISound("Hit", 1.0f);
         }
 
         if(coll.gameObject.layer == LayerMask.NameToLayer("Ball"))
         {
             PlayerTakeDemaged(50);
             OnDamaged(coll.transform.position);
+            Sound_Mgr.Instance.PlayGUISound("Hit", 1.0f);
         }
+
+        if(coll.gameObject.name.Contains("DieZone"))
+        {
+            PlayerDie();
+        }
+
     }
 
     void OnAttack(Transform enemy)
@@ -202,18 +215,18 @@ public class PlayerCtrl : MonoBehaviour
         mon.TakeDemaged();     
     }
 
-    public bool isLadder;
-
     void OnTriggerEnter2D(Collider2D coll)
     {
         if(coll.gameObject.name.Contains("Coin"))
         {
             GameMgr.Inst.AddGold();
             Destroy(coll.gameObject);
+
+            Sound_Mgr.Instance.PlayGUISound("coin", 1.0f);
         }
         if(coll.gameObject.name.Contains("door"))
         {
-            GameMgr.m_gameLevel = GameLevel.Boss;
+            GameMgr.m_gameState = GameState.Boss;
             SceneManager.LoadScene("BossScene");
             
         }
@@ -221,10 +234,7 @@ public class PlayerCtrl : MonoBehaviour
         {
             coll.isTrigger = true;
         }
-        else if(coll.gameObject.CompareTag("ladder"))
-        {
-            isLadder = true;
-        }
+
     }
 
     void OnTriggerExit2D(Collider2D coll)
@@ -232,11 +242,6 @@ public class PlayerCtrl : MonoBehaviour
         if (coll.gameObject.name.Contains("Wall"))
         { 
             coll.isTrigger = false;
-        }
-        else if(coll.gameObject.CompareTag("ladder"))
-        {
-            isLadder = false;
-
         }
     }
 
@@ -256,9 +261,7 @@ public class PlayerCtrl : MonoBehaviour
         {
             hp = 0;
             PlayerDie();
-        }       
-
-         
+        }              
     }
 
     public void UseSkill_Item(SkillType a_SkType)
@@ -266,6 +269,7 @@ public class PlayerCtrl : MonoBehaviour
         if(a_SkType == SkillType.Skill_0)
         {
             hp += (int)(initHp * 0.3f);
+            GameMgr.Inst.DamageText(initHp * 0.3f, transform.position, new Color(0.18f, 0.5f, 0.34f));
 
             if (initHp < hp)
                 hp = initHp;
@@ -280,6 +284,8 @@ public class PlayerCtrl : MonoBehaviour
                 return;
 
             m_SdOnTime = m_SdDuration;
+
+            GameMgr.Inst.SkillTimeMethod(m_SdOnTime, m_SdDuration);
         
         }
 
@@ -344,5 +350,10 @@ public class PlayerCtrl : MonoBehaviour
         isDie = true;      
         anim.SetTrigger("Die");
         Time.timeScale = 0.0f;
+
+        GameMgr.Inst.GameOver();
+
+        Sound_Mgr.Instance.m_AudioSrc.clip = null;  //배경음 플레이 안함
+
     }
 }
