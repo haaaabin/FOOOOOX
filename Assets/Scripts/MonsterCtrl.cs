@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 public enum BossState
 {
-    Boss_Idle,
     Boss_Move,
     Boss_Attack,
     Fall_Bull
@@ -32,8 +31,6 @@ public class MonsterCtrl : MonoBehaviour
 
     public float MoveSpeed = 3;
     float RunSpeed = 5;
-    float m_Hp = 100;
-    [HideInInspector] public float m_CurHp = 100;
 
     public int nextMove;
 
@@ -44,15 +41,15 @@ public class MonsterCtrl : MonoBehaviour
 
     public GameObject m_HpBarObj = null;
     public Image m_hpBarImg = null;
-    float m_HP = 400;
-    float m_curHp = 400;
+    float m_Hp = 100;
+    [HideInInspector] public float m_CurHp = 100;
 
     private Transform playerTr;
 
     [Header("--- Plant Monster --- ")]
     public GameObject m_MonBullet = null;
     public GameObject m_shootPos = null;
-    public float Bulletspeed = 10f;
+    public float Bulletspeed = 10.0f;
 
 
     [Header("--- Trunk Monster --- ")]
@@ -71,8 +68,6 @@ public class MonsterCtrl : MonoBehaviour
     public GameObject m_bosshpBarObj = null;
     public Image m_bosshpBarImg = null;
 
-    float move_Time = 0.0f;
-    float move_delay = 1.0f;
 
     public GameObject ballPrefab = null;
     float spawn = 0.5f;
@@ -96,17 +91,21 @@ public class MonsterCtrl : MonoBehaviour
 
         playerTr = GameObject.FindWithTag("Player").GetComponent<Transform>();
 
-        if (m_MonType == MonType.Snail)
+        if (m_MonType == MonType.Walk_Monster)
         {
-            m_HP = 200.0f;
-            m_curHp = m_HP;
+            m_Hp = 50.0f;
+            m_CurHp = m_Hp;
         }
-
-        if (m_MonType == MonType.Boss)
+        else if (m_MonType == MonType.attack_Monster)
+        {
+            m_Hp = 200.0f;
+            m_CurHp = m_Hp;
+        }
+        else if (m_MonType == MonType.Boss)
         {
             GameMgr.m_gameState = GameState.Boss;
             m_Hp = 3000.0f;
-            m_curHp = m_Hp;          
+            m_CurHp = m_Hp;          
         }
 
  
@@ -143,7 +142,7 @@ public class MonsterCtrl : MonoBehaviour
 
         if (m_BossState == BossState.Boss_Move)
         {
-            rigid.velocity = new Vector2(-turn * MoveSpeed, rigid.velocity.y);
+            rigid.velocity = new Vector2(-turn * 4, rigid.velocity.y);
 
             Vector2 frontVec = new Vector2(rigid.position.x + (-turn * 2.8f), rigid.position.y);
             Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
@@ -156,7 +155,7 @@ public class MonsterCtrl : MonoBehaviour
                 sprite.flipX = turn == -1;
 
             delay_time += Time.deltaTime;
-            if (delay_time >= 10.0f)
+            if (delay_time >= 7.0f)
             {
                 delay_time = 0f;
                 shootTime = 0.5f;
@@ -174,12 +173,12 @@ public class MonsterCtrl : MonoBehaviour
                 go.transform.position = new Vector3(dropPosX, 6.2f, 0.0f);
 
                 fallCount++;
-                if (fallCount < 12)
+                if (fallCount < 14)
                     shootTime = 0.5f;   //공 떨어트리기 
                 else
                 {
                     fallCount = 0;
-                    shootTime = 1f;
+                    shootTime = 0.5f;
                     delay_time = 1;
                     m_BossState = BossState.Boss_Attack;
                 }
@@ -195,7 +194,7 @@ public class MonsterCtrl : MonoBehaviour
 
                 anim.SetBool("Attack", true);
 
-                rigid.velocity = new Vector2(-turn * 5, rigid.velocity.y);
+                rigid.velocity = new Vector2(-turn * 6, rigid.velocity.y);
                 Vector2 frontVec = new Vector2(rigid.position.x + (-turn * 2.8f), rigid.position.y);
                 Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
                 RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1, LayerMask.GetMask("Wall"));
@@ -232,7 +231,6 @@ public class MonsterCtrl : MonoBehaviour
 
                         anim.SetBool("Attack", false);
                         m_ShootCount = 0;
-                        shootTime = 0.7f;
                         m_BossState = BossState.Boss_Move;
                     }
                 }
@@ -240,80 +238,6 @@ public class MonsterCtrl : MonoBehaviour
            
         }
     }
-
-        //delay_time += Time.deltaTime;
-        //if (delay_time >= 5.0f)    //10초 뒤에 돌 떨어트리기
-        //{
-        //    anim.SetBool("Attack", true);
-
-        //    shootTime += Time.deltaTime;
-        //    if (shootTime > 2)
-        //    {
-        //        shootTime = 0.0f;
-        //        GameObject a_NewObj = Instantiate(m_bossBullet) as GameObject;
-        //        BulletCtrl a_BulletSc = a_NewObj.GetComponent<BulletCtrl>();
-        //        a_BulletSc.BulletSpawn(m_BShootPos.transform.position, Vector3.left * turn, Bulletspeed);
-        //    }
-        //    delay_time = 0.0f;     
-
-        //    //sState = BossState.Fall_Bull;               
-        //}
-
-    
-    //else if (m_BossState == BossState.Fall_Bull)
-    //{
-    //    delta += Time.deltaTime;
-    //    if (delta > spawn)
-    //    {
-    //        GameObject go = Instantiate(ballPrefab) as GameObject;
-
-    //        int dropPosX = Random.Range(23, 38);
-    //        go.transform.position = new Vector3(dropPosX, 6.2f, 0.0f);
-
-    //        fallCount++;
-    //        if (fallCount > 12) 
-    //        {
-    //            fallCount = 0;
-    //            m_BossState = BossState.Boss_Attack;
-    //        }
-    //        delta = 0.0f;
-    //    }
-
-    //}
-    //else if (m_BossState == BossState.Boss_Attack)
-    //{
-    //    anim.SetBool("Attack",true);
-
-    //    shootTime += Time.deltaTime;
-    //    if(shootTime > 2)
-    //    {
-    //        shootTime = 0.0f;
-    //        GameObject a_NewObj = Instantiate(m_bossBullet) as GameObject;
-    //        BulletCtrl a_BulletSc = a_NewObj.GetComponent<BulletCtrl>();
-    //        a_BulletSc.BulletSpawn(m_BShootPos.transform.position, Vector3.left, Bulletspeed);
-    //    }
-    //    //shootTime += Time.deltaTime;
-    //    //if(shootTime < shootDelay)
-    //    //{
-    //    //    BulletCtrl a_BulletSc = null;
-
-    //    //    Vector3 a_Pos;
-    //    //    GameObject a_CloneObj = null;
-    //    //    for(int i = 0; i < 2; i++)
-    //    //    {
-    //    //        a_CloneObj = (GameObject)Instantiate(ballPrefab);
-    //    //        a_Pos = m_BShootPos.transform.position;
-    //    //        a_Pos.y += 0.2f - (i * 0.4f);
-    //    //        a_CloneObj.transform.position = a_Pos;
-    //    //        a_BulletSc = a_CloneObj.GetComponent<BulletCtrl>();
-    //    //        a_BulletSc.BulletSpawn(a_CloneObj.transform.position, Vector3.left, Bulletspeed);
-
-    //    //    }
-    //    //}
-    //    //shootTime = 0.0f;
-
-    //}
-
 
     void CheckPlatform()
     {
@@ -494,30 +418,30 @@ public class MonsterCtrl : MonoBehaviour
         }
     }
 
-    public void TakeDemaged(float a_Value = 100)
+    public void TakeDemaged(float a_Value = 50)
     {
         anim.SetTrigger("Hit");
 
-        m_curHp -= a_Value;
+        m_CurHp -= a_Value;
 
         if (m_HpBarObj != null)
             m_HpBarObj.SetActive(true);
 
         if (m_hpBarImg != null)
-            m_hpBarImg.fillAmount = m_curHp / m_Hp;
+            m_hpBarImg.fillAmount = m_CurHp / m_Hp;
 
         if(m_MonType == MonType.Snail)
         {
-            if (m_curHp == 100)
+            if (m_CurHp == 50)
             {
                 anim.SetTrigger("Hit");
                 anim.SetBool("ChangeShell", true);
                 isChange = true;
             }
-            else if (m_curHp <= 0.0f)
+            else if (m_CurHp <= 0.0f)
             {
                 anim.SetTrigger("ShellHit");
-                m_curHp = 0.0f;
+                m_CurHp = 0.0f;
                 GameMgr.Inst.SpawnCoin(transform.position);
                 MonsterDie();
             }
@@ -525,13 +449,13 @@ public class MonsterCtrl : MonoBehaviour
         else if(m_MonType == MonType.Boss)
         {
             if (m_bosshpBarImg != null)
-                m_bosshpBarImg.fillAmount = m_curHp / m_Hp;
+                m_bosshpBarImg.fillAmount = m_CurHp / m_Hp;
         }
         else
         {
-            if (m_curHp <= 0.0f)
+            if (m_CurHp <= 0.0f)
             {
-                m_curHp = 0.0f;
+                m_CurHp = 0.0f;
                 m_HpBarObj.SetActive(false);
                 GameMgr.Inst.SpawnCoin(transform.position);
                 MonsterDie();
@@ -542,17 +466,17 @@ public class MonsterCtrl : MonoBehaviour
 
     public void BossTakeDemaged(float a_Value = 10)
     {
-        if (m_curHp <= 0.0f)
+        if (m_CurHp <= 0.0f)
             return;
 
-        m_curHp -= a_Value;
+        m_CurHp -= a_Value;
 
         if (m_bosshpBarImg != null)
-            m_bosshpBarImg.fillAmount = m_curHp / m_Hp;
+            m_bosshpBarImg.fillAmount = m_CurHp / m_Hp;
 
-        if (m_curHp <= 0.0f)
+        if (m_CurHp <= 0.0f)
         {
-            m_curHp = 0.0f;
+            m_CurHp = 0.0f;
         }
     }
 

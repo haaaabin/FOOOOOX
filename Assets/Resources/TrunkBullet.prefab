@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 113643240129968215}
   - component: {fileID: 113643240129968168}
   - component: {fileID: 113643240129968213}
-  - component: {fileID: 113643240129968214}
+  - component: {fileID: 4034420674229052064}
   m_Layer: 12
   m_Name: TrunkBullet
   m_TagString: M_Bullet
@@ -74,7 +74,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 3
   m_Sprite: {fileID: 21300000, guid: f817ba5aabd773e4f914480bdd62d0c8, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -102,7 +102,7 @@ CapsuleCollider2D:
   m_Offset: {x: 0.021708064, y: -0.015195762}
   m_Size: {x: 0.5308232, y: 0.3354541}
   m_Direction: 1
---- !u!114 &113643240129968214
+--- !u!114 &4034420674229052064
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -111,6 +111,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 113643240129968169}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: be01dde845abcd149a9dd8c8ae8029d7, type: 3}
+  m_Script: {fileID: 11500000, guid: 5e1df38f0903a034e91d9bec2bd7e101, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

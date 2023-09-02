@@ -19,6 +19,7 @@ public class StoreBox : MonoBehaviour
     public Text messageText = null;
     public Button CloseBtn = null;
 
+    bool buying = true;
     // Start is called before the first frame update
     void Start()
     {
@@ -56,39 +57,58 @@ public class StoreBox : MonoBehaviour
 
     void BuyLifeItem()
     {
-        int a_Cost = 500;
-        m_SkType = SkillType.Skill_0;
-        int a_SkIdx = (int)m_SkType;
-        GlobalValue.g_SkillCount[a_SkIdx]++;
-        GlobalValue.g_UserGold -= a_Cost;
-
-        string a_Skill = "SkItem_" + (a_SkIdx).ToString();
-        PlayerPrefs.SetInt(a_Skill, GlobalValue.g_SkillCount[a_SkIdx]);
-        PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
-
-        if (GlobalValue.g_UserGold < a_Cost)
+        if(buying)
         {
-            MessagePanel.SetActive(true);
-            messageText.text = "보유 금액 부족";
+            int a_Cost = 1000;
+            m_SkType = SkillType.Skill_0;
+            int a_SkIdx = (int)m_SkType;
+            GlobalValue.g_SkillCount[a_SkIdx]++;
+            GlobalValue.g_UserGold -= a_Cost;
+
+            if (GlobalValue.g_UserGold <= a_Cost)
+            {
+                buying = false;
+                MessagePanel.SetActive(true);
+                messageText.text = "보유 금액 부족";
+
+                GlobalValue.g_UserGold = 0;
+            }
+
+            string a_Skill = "SkItem_" + (a_SkIdx).ToString();
+            PlayerPrefs.SetInt(a_Skill, GlobalValue.g_SkillCount[a_SkIdx]);
+            PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
         }
+
         RefreshSkItemUI();
     }
 
     void BuyShieldItem()
     {
-        int a_Cost = 500;
-        m_SkType = SkillType.Skill_1;
-        int a_SkIdx = (int)m_SkType;
-        GlobalValue.g_SkillCount[a_SkIdx]++;
-        GlobalValue.g_UserGold -= a_Cost;
+        if (buying)
+        {
+            int a_Cost = 500;
+            m_SkType = SkillType.Skill_1;
+            int a_SkIdx = (int)m_SkType;
+            GlobalValue.g_SkillCount[a_SkIdx]++;
+            GlobalValue.g_UserGold -= a_Cost;
 
-        string a_Skill = "SkItem_" + (a_SkIdx).ToString();
-        PlayerPrefs.SetInt(a_Skill, GlobalValue.g_SkillCount[a_SkIdx]);
-        PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
+            string a_Skill = "SkItem_" + (a_SkIdx).ToString();
+            PlayerPrefs.SetInt(a_Skill, GlobalValue.g_SkillCount[a_SkIdx]);
+            PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
 
-        if (GlobalValue.g_UserGold < a_Cost)
-            Debug.Log("구매금액 부족");
-        RefreshSkItemUI();
+
+            if (GlobalValue.g_UserGold < a_Cost)
+            {
+                MessagePanel.SetActive(true);
+                messageText.text = "보유 금액 부족";
+
+                buying = false;
+
+                GlobalValue.g_UserGold = 0;
+            }
+
+            RefreshSkItemUI();
+        }
     }
     //public void BuySkillItem(SkillType a_SkType)
     //{

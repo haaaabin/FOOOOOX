@@ -12,7 +12,7 @@ TagManager:
   - Damagable
   - Coin
   - Boss
-  - ladder
+  - Door
   layers:
   - Default
   - TransparentFX

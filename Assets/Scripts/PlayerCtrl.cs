@@ -62,9 +62,6 @@ public class PlayerCtrl : MonoBehaviour
         groundMask = 1 << LayerMask.NameToLayer("Platform") | 1 << LayerMask.NameToLayer("AirPlatform");
     }
 
-    void FixedUpdate()
-    {
-    }
     // Update is called once per frame
 
     void Update()
@@ -224,12 +221,15 @@ public class PlayerCtrl : MonoBehaviour
 
             Sound_Mgr.Instance.PlayGUISound("coin", 1.0f);
         }
-        if(coll.gameObject.name.Contains("door"))
+        if(coll.gameObject.CompareTag("Door"))
         {
             GameMgr.m_gameState = GameState.Boss;
+
             SceneManager.LoadScene("BossScene");
-            
+            SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
+     
         }
+
         if(coll.gameObject.name.Contains("Wall"))
         {
             coll.isTrigger = true;
@@ -245,7 +245,7 @@ public class PlayerCtrl : MonoBehaviour
         }
     }
 
-    void PlayerTakeDemaged(int a_Value)
+    void PlayerTakeDemaged(float a_Value)
     {
         if (0.0f < m_SdOnTime)  //쉴드 스킬 발동 중일 때.. 데미지 스킬
             return;
@@ -253,7 +253,9 @@ public class PlayerCtrl : MonoBehaviour
         GameMgr.Inst.DamageText(-a_Value, transform.position, Color.blue);
 
         hp -= a_Value;
+        GlobalValue.g_Hp -= a_Value;
 
+        PlayerPrefs.SetFloat("Hp", GlobalValue.g_Hp); 
         if (m_HpBarImg != null)
             m_HpBarImg.fillAmount = hp / initHp;
   

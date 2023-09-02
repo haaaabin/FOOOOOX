@@ -235,7 +235,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: "500 \uACE8\uB4DC"
+  m_Text: "1000 \uACE8\uB4DC"
 --- !u!1 &1417533703773670913
 GameObject:
   m_ObjectHideFlags: 0
@@ -871,7 +871,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: "500 \uACE8\uB4DC"
+  m_Text: "1000 \uACE8\uB4DC"
 --- !u!1 &1417533705042079273
 GameObject:
   m_ObjectHideFlags: 0
@@ -957,7 +957,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7653393058973928515}
-  - component: {fileID: 3094147769508880481}
   m_Layer: 5
   m_Name: LifeItem
   m_TagString: Untagged
@@ -989,20 +988,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &3094147769508880481
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2385902194432070434}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 50100d8978916c94fb1ae81049182f7e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SkType: 0
-  ItemSlotBtn: []
 --- !u!1 &3108239251532186166
 GameObject:
   m_ObjectHideFlags: 0
@@ -2001,7 +1986,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4995500388594567117}
-  - component: {fileID: 3055706994239610370}
   m_Layer: 5
   m_Name: ShieldItem
   m_TagString: Untagged
@@ -2033,17 +2017,3 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &3055706994239610370
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7989177924962359406}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 50100d8978916c94fb1ae81049182f7e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SkType: 0
-  ItemSlotBtn: []

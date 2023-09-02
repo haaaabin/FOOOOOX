@@ -20,8 +20,10 @@ public class TitleMgr : MonoBehaviour
             m_StartGameBtn.onClick.AddListener(()=>
             {
                 if (Fade_Mgr.Inst != null && Fade_Mgr.Inst.IsFadeOut == true)
+                {
                     Fade_Mgr.Inst.SceneOut("Level1");
-
+              
+                }
                 else
                 {
                     SceneManager.LoadScene("Level1");

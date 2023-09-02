@@ -20,7 +20,7 @@ public class CamCtrl : MonoBehaviour
     //Update is called once per frame
     void LateUpdate()
     {
-        Vector3 targetPos = new Vector3(target.position.x + 6f, target.position.y + 2.5f, this.transform.position.z) ;
+        Vector3 targetPos = new Vector3(target.position.x + 3f, target.position.y + 1.8f, this.transform.position.z) ;
 
         targetPos.x = Mathf.Clamp(targetPos.x, minCameraBoundary.x, maxCameraBoundary.x);
         targetPos.y = Mathf.Clamp(targetPos.y, minCameraBoundary.y, maxCameraBoundary.y);

@@ -25,7 +25,7 @@ public class GameMgr : MonoBehaviour
     // ---- ªÛ¡° -----
     [Header(" ---- Store ----- ")]
     public Button m_StoreBtn = null;
-    public GameObject m_StoreBoxObj = null;
+    [HideInInspector] public GameObject m_StoreBoxObj = null;
 
     public GameObject m_CoinItem = null;
     public Text m_GoldText = null;
@@ -40,7 +40,7 @@ public class GameMgr : MonoBehaviour
     [Header("---- Config -----")]
     public Button m_ConfigBtn = null;
     public GameObject Canvas_Dialog = null;
-    public GameObject m_ConfigBoxObj = null;
+    [HideInInspector] public GameObject m_ConfigBoxObj = null;
     
     public static GameMgr Inst = null;
 
@@ -66,9 +66,10 @@ public class GameMgr : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Time.timeScale = 1.0f;
-        GlobalValue.LoadGameData();
 
+        GlobalValue.LoadGameData();
+        Time.timeScale = 1.0f;
+       
         RefreshGameUI();
 
         if (m_StoreBtn != null)
@@ -99,6 +100,16 @@ public class GameMgr : MonoBehaviour
          
         m_Player = GameObject.FindObjectOfType<PlayerCtrl>();
 
+        if(SceneManager.GetActiveScene().name =="BossScene")
+        {
+            PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
+            m_GoldText.text = m_CurGold.ToString();
+
+            PlayerPrefs.SetFloat("Hp", GlobalValue.g_Hp);
+            m_Player.m_HpBarImg.fillAmount = m_Player.hp / m_Player.initHp;
+
+
+        }
         Sound_Mgr.Instance.PlayBGM("hurry_up_and_run", 1.0f);
     }
     
@@ -187,7 +198,8 @@ public class GameMgr : MonoBehaviour
 
     public void RefreshGameUI()
     {
-        for(int i = 0; i <GlobalValue.g_SkillCount.Length; i++)
+
+        for (int i = 0; i <GlobalValue.g_SkillCount.Length; i++)
         {
             if (m_SkInvenNode.Length <= i)
                 return;

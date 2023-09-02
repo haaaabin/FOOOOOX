@@ -91,6 +91,7 @@ public class Fade_Mgr : MonoBehaviour
                 else if(m_StVal == 0.0f && m_EndVal == 1.0f)    //³ª°¥ ¶§
                 {
                     SceneManager.LoadScene(m_SceneName);
+
                 }
             }
         }

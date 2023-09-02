@@ -5,7 +5,7 @@ using UnityEngine;
 public class MonBulletCtrl : MonoBehaviour
 {
     Vector3 m_DirVec = Vector3.right;
-    float m_MoveSpeed = 15.0f;
+    float m_MoveSpeed = 20.0f;
 
     // Start is called before the first frame update
     void Start()

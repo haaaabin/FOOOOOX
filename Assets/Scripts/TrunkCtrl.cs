@@ -54,19 +54,5 @@ public class TrunkCtrl : MonoBehaviour
         if (turn != 0)
             sprite.flipX = turn == 1;
 
-        //if (turn == 0)
-        //{
-        //    shootTime += Time.deltaTime;
-        //    if (shootDelay <= shootTime)
-        //    {
-        //        if (m_TMonBullet != null)
-        //        {
-        //            GameObject a_NewObj = Instantiate(m_TMonBullet) as GameObject;
-        //            BulletCtrl a_Bullet = a_NewObj.GetComponent<BulletCtrl>();
-        //            a_Bullet.BulletSpawn(m_TshootPos.transform.position, Vector3.right, 10);
-        //        }
-        //        shootTime = 0f;
-        //    }
-        //}
     }
 }
