@@ -32,6 +32,7 @@ public class ConfigBox : MonoBehaviour
         if (m_GameEndBtn != null)
             m_GameEndBtn.onClick.AddListener(() =>
             {
+                PlayerPrefs.DeleteAll();
                 if (Fade_Mgr.Inst != null && Fade_Mgr.Inst.IsFadeOut == true)
                     Fade_Mgr.Inst.SceneOut("TitleScene");
                 else
@@ -45,14 +46,27 @@ public class ConfigBox : MonoBehaviour
         //슬라이드 상태가 변경되었을 때 호출되는 함수 대기하는 코드
         if (m_Sound_Slider != null)
             m_Sound_Slider.onValueChanged.AddListener(SliderChanged);
+
+        //--체크 상태, 슬라이드 상태 로딩 후 UI컨트롤에 적용
+        int a_SoundOnOff = PlayerPrefs.GetInt("SoundOnOff", 1);
+        if(m_Sound_Toggle != null)
+        {
+            if (a_SoundOnOff == 1)
+                m_Sound_Toggle.isOn = true;
+            else
+                m_Sound_Toggle.isOn = false;
+        }
+
+        if (m_Sound_Slider != null)
+            m_Sound_Slider.value = PlayerPrefs.GetFloat("SoundVolume", 1.0f);
     }
 
     // Update is called once per frame
-    void Update()
-    {
+    //void Update()
+    //{
 
 
-    }
+    //}
     void SoundOnOff(bool value) // 체크 상태가 변경되었을 때 호출되게 할 함수
     {
         if(m_Sound_Toggle != null)

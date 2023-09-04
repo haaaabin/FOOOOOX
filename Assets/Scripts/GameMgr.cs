@@ -9,7 +9,8 @@ public enum GameState
 {
     Level1,
     Boss,
-    GameOver
+    GameOver,
+    Ending
 }
 
 public class GameMgr : MonoBehaviour
@@ -25,9 +26,10 @@ public class GameMgr : MonoBehaviour
     // ---- 상점 -----
     [Header(" ---- Store ----- ")]
     public Button m_StoreBtn = null;
-    [HideInInspector] public GameObject m_StoreBoxObj = null;
+    public GameObject m_StoreBoxObj = null;
 
     public GameObject m_CoinItem = null;
+    public GameObject m_DiaItem = null;
     public Text m_GoldText = null;
     int m_CurGold = 0;
 
@@ -50,13 +52,14 @@ public class GameMgr : MonoBehaviour
     public GameObject GameOverPanel = null;
     public Button m_ReplayBtn = null;
     public Button m_GameExitBtn = null;
+    public Text m_titleTxt = null;
 
     [Header("---- Skill Cool Timer -----")]
     public GameObject m_SkCoolPrefab = null;
     public Transform m_SkCoolRoot = null;
     public SkInvenNode[] m_SkInvenNode;     //Skill 인벤토리 연결 변수
 
-
+    public Image m_HpBarImg = null;
 
     void Awake()
     {
@@ -66,21 +69,19 @@ public class GameMgr : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
         GlobalValue.LoadGameData();
         Time.timeScale = 1.0f;
-       
-        RefreshGameUI();
+
+        InitRefreshUI();
+        RefreshSkill();
 
         if (m_StoreBtn != null)
             m_StoreBtn.onClick.AddListener(()=>
             {
-                if (m_StoreBoxObj == null)
-                    m_StoreBoxObj = Resources.Load("StoreBox") as GameObject;
+                if (m_StoreBoxObj != null)
+                    m_StoreBoxObj.SetActive(true);
 
-                GameObject a_StoreObj = Instantiate(m_StoreBoxObj) as GameObject;
-                a_StoreObj.transform.SetParent(Canvas_Dialog.transform, false);
-                a_StoreObj.GetComponent<StoreBox>();
+                m_StoreBoxObj.GetComponent<StoreBox>();
 
                 Time.timeScale = 0.0f;
             });
@@ -100,17 +101,16 @@ public class GameMgr : MonoBehaviour
          
         m_Player = GameObject.FindObjectOfType<PlayerCtrl>();
 
-        if(SceneManager.GetActiveScene().name =="BossScene")
+        if(SceneManager.GetActiveScene().name == "Level1")
         {
-            PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
-            m_GoldText.text = m_CurGold.ToString();
-
-            PlayerPrefs.SetFloat("Hp", GlobalValue.g_Hp);
-            m_Player.m_HpBarImg.fillAmount = m_Player.hp / m_Player.initHp;
-
+            Sound_Mgr.Instance.PlayBGM("hurry_up_and_run", 1.0f);
 
         }
-        Sound_Mgr.Instance.PlayBGM("hurry_up_and_run", 1.0f);
+        else if(SceneManager.GetActiveScene().name == "BossScene")
+        {
+            Sound_Mgr.Instance.PlayBGM("Maniac", 1.0f);
+
+        }
     }
     
     // Update is called once per frame
@@ -180,6 +180,16 @@ public class GameMgr : MonoBehaviour
         Destroy(a_CoinObj, 10);
     }
 
+    public void SpawnDia(Vector3 a_Pos)
+    {
+        if (m_DiaItem == null)
+            return;
+
+        GameObject a_DiaObj = Instantiate(m_DiaItem) as GameObject;
+        a_DiaObj.transform.position = a_Pos;
+        Destroy(a_DiaObj, 10);
+    }
+
     public void AddGold(int value = 10)
     {        
         if (m_CurGold < 0)
@@ -195,10 +205,20 @@ public class GameMgr : MonoBehaviour
         PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
     }
 
-
-    public void RefreshGameUI()
+    void InitRefreshUI()
     {
+        if (GlobalValue.g_UserGold <= 0)
+            GlobalValue.g_UserGold = 0;
+        if (m_GoldText != null)
+            m_GoldText.text = m_CurGold.ToString();
 
+        if (m_HpBarImg != null)
+            m_HpBarImg.fillAmount = GlobalValue.g_Hp / PlayerCtrl.initHp;
+
+    }
+
+    public void RefreshSkill()
+    {
         for (int i = 0; i <GlobalValue.g_SkillCount.Length; i++)
         {
             if (m_SkInvenNode.Length <= i)
@@ -208,10 +228,12 @@ public class GameMgr : MonoBehaviour
             m_SkInvenNode[i].m_SkCountText.text = GlobalValue.g_SkillCount[i].ToString();
         }
     }
-    
+
     public void GameOver()
     {
         m_gameState = GameState.GameOver;
+
+        Time.timeScale = 0.0f;
 
         PlayerPrefs.DeleteAll();
 
@@ -240,5 +262,41 @@ public class GameMgr : MonoBehaviour
             });
 
     }
+    public void GameEnding()
+    {
+        m_gameState = GameState.Ending;
+
+        Time.timeScale = 0.0f;
+
+        PlayerPrefs.DeleteAll();
+
+        if (GameOverPanel != null && GameOverPanel.activeSelf == false)
+            GameOverPanel.SetActive(true);
+
+        m_titleTxt.text = "GAME ENDING !";
+
+        if (m_ReplayBtn != null)
+            m_ReplayBtn.onClick.AddListener(() =>
+            {
+                if (Fade_Mgr.Inst != null && Fade_Mgr.Inst.IsFadeOut == true)
+                    Fade_Mgr.Inst.SceneOut("Level1");
+                else
+                {
+                    SceneManager.LoadScene("Level1");
+                    SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
+                }
+            });
+
+        if (m_GameExitBtn != null)
+            m_GameExitBtn.onClick.AddListener(() =>
+            {
+                if (Fade_Mgr.Inst != null && Fade_Mgr.Inst.IsFadeOut == true)
+                    Fade_Mgr.Inst.SceneOut("TitleScene");
+                else
+                    SceneManager.LoadScene("TitleScene");
+            });
+    }
+
+    
 }
 

@@ -17,12 +17,12 @@ public class TitleMgr : MonoBehaviour
     void Start()
     {
         if (m_StartGameBtn != null)
-            m_StartGameBtn.onClick.AddListener(()=>
+            m_StartGameBtn.onClick.AddListener(() =>
             {
                 if (Fade_Mgr.Inst != null && Fade_Mgr.Inst.IsFadeOut == true)
                 {
-                    Fade_Mgr.Inst.SceneOut("Level1");
-              
+                    Fade_Mgr.Inst.SceneOut("GameUIScene");
+
                 }
                 else
                 {
@@ -52,11 +52,9 @@ public class TitleMgr : MonoBehaviour
             });
 
         Sound_Mgr.Instance.PlayBGM("under the rainbow", 1.0f);
-        
-        
 
     }
-
+    
     // Update is called once per frame
     void Update()
     {

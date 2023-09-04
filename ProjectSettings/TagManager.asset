@@ -13,6 +13,7 @@ TagManager:
   - Coin
   - Boss
   - Door
+  - Shield
   layers:
   - Default
   - TransparentFX

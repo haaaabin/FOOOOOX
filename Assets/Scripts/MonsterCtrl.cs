@@ -38,7 +38,7 @@ public class MonsterCtrl : MonoBehaviour
     float shootDelay = 0.9f;
 
     bool isDie = false;
-
+    
     public GameObject m_HpBarObj = null;
     public Image m_hpBarImg = null;
     float m_Hp = 100;
@@ -60,14 +60,14 @@ public class MonsterCtrl : MonoBehaviour
 
     bool isChange;
 
-    float delay_time = 0;
+    float delay_time = 10;
 
     //Boss
     BossState m_BossState = BossState.Boss_Move;
     int m_ShootCount = 0;
     public GameObject m_bosshpBarObj = null;
     public Image m_bosshpBarImg = null;
-
+    public float Boss_Bulletspeed = 15.0f;
 
     public GameObject ballPrefab = null;
     float spawn = 0.5f;
@@ -104,7 +104,7 @@ public class MonsterCtrl : MonoBehaviour
         else if (m_MonType == MonType.Boss)
         {
             GameMgr.m_gameState = GameState.Boss;
-            m_Hp = 3000.0f;
+            m_Hp = 5000.0f;
             m_CurHp = m_Hp;          
         }
 
@@ -154,33 +154,51 @@ public class MonsterCtrl : MonoBehaviour
             if (turn != 0)
                 sprite.flipX = turn == -1;
 
-            delay_time += Time.deltaTime;
-            if (delay_time >= 7.0f)
+            delay_time -= Time.deltaTime;
+            if (delay_time <= 0.0f)
             {
-                delay_time = 0f;
+                delay_time = 1f;
                 shootTime = 0.5f;
                 m_BossState = BossState.Fall_Bull;
             }
         }
         else if (m_BossState == BossState.Fall_Bull)
         {
-            shootTime -= Time.deltaTime;
-            if (shootTime <= 0.0f)
+            delay_time -= Time.deltaTime;
+            if (delay_time <= 0.0f)
             {
-                GameObject go = Instantiate(ballPrefab) as GameObject;
-
-                int dropPosX = Random.Range(23, 38);
-                go.transform.position = new Vector3(dropPosX, 6.2f, 0.0f);
-
-                fallCount++;
-                if (fallCount < 14)
-                    shootTime = 0.5f;   //공 떨어트리기 
-                else
+                rigid.velocity = new Vector2(-turn * 5, rigid.velocity.y);
+                Vector2 frontVec = new Vector2(rigid.position.x + (-turn * 2.8f), rigid.position.y);
+                Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
+                RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1, LayerMask.GetMask("Wall"));
+                if (rayGHit.collider != null)
                 {
-                    fallCount = 0;
-                    shootTime = 0.5f;
-                    delay_time = 1;
-                    m_BossState = BossState.Boss_Attack;
+                    turn *= -1;
+                }
+                if (turn != 0)
+                    sprite.flipX = turn == -1;
+
+                shootTime -= Time.deltaTime;
+                if (shootTime <= 0.0f)
+                {
+                    GameObject go = Instantiate(ballPrefab) as GameObject;
+
+                    int dropPosX = Random.Range(23, 38);
+                    go.transform.position = new Vector3(dropPosX, 6.2f, 0.0f);
+
+                    fallCount++;
+                    if (fallCount < 14)
+                        shootTime = 0.5f;   //공 떨어트리기 
+                    else
+                    {
+                        fallCount = 0;
+                        shootTime = 0.5f;
+                        delay_time = 1;
+                        m_BossState = BossState.Boss_Attack;
+
+                    }
+
+                    Sound_Mgr.Instance.PlayGUISound("Fall", 1.2f);
                 }
             }
 
@@ -194,7 +212,7 @@ public class MonsterCtrl : MonoBehaviour
 
                 anim.SetBool("Attack", true);
 
-                rigid.velocity = new Vector2(-turn * 6, rigid.velocity.y);
+                rigid.velocity = new Vector2(-turn * 9, rigid.velocity.y);
                 Vector2 frontVec = new Vector2(rigid.position.x + (-turn * 2.8f), rigid.position.y);
                 Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
                 RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1, LayerMask.GetMask("Wall"));
@@ -219,18 +237,19 @@ public class MonsterCtrl : MonoBehaviour
                         a_Pos.y -= 0.4f - (i * 1.2f);
                         a_CloneObj.transform.position = a_Pos;
                         a_BulletSc = a_CloneObj.GetComponent<MonBulletCtrl>();
-                        a_BulletSc.MBulletSpawn(a_CloneObj.transform.position, Vector3.left * turn, Bulletspeed);
+                        a_BulletSc.MBulletSpawn(a_CloneObj.transform.position, Vector3.left * turn, Boss_Bulletspeed);
                     }
 
                     m_ShootCount++;
                     if (m_ShootCount < 19)
-                        shootTime = 0.5f;
+                        shootTime = 0.7f;
                     else
                     {
                         sprite.color = new Color(1, 1, 1, 1);
 
                         anim.SetBool("Attack", false);
                         m_ShootCount = 0;
+                        delay_time = 10.0f;
                         m_BossState = BossState.Boss_Move;
                     }
                 }
@@ -416,6 +435,13 @@ public class MonsterCtrl : MonoBehaviour
                 OnDamaged();
             }
         }
+        if(coll.gameObject.tag == "Shield")
+        {
+            if(coll.gameObject.layer == LayerMask.NameToLayer("Monster"))
+            {
+                MonsterDie();
+            }
+        }
     }
 
     public void TakeDemaged(float a_Value = 50)
@@ -446,11 +472,6 @@ public class MonsterCtrl : MonoBehaviour
                 MonsterDie();
             }
         }
-        else if(m_MonType == MonType.Boss)
-        {
-            if (m_bosshpBarImg != null)
-                m_bosshpBarImg.fillAmount = m_CurHp / m_Hp;
-        }
         else
         {
             if (m_CurHp <= 0.0f)
@@ -464,7 +485,7 @@ public class MonsterCtrl : MonoBehaviour
         
     }
 
-    public void BossTakeDemaged(float a_Value = 10)
+    public void BossTakeDemaged(float a_Value = 50)
     {
         if (m_CurHp <= 0.0f)
             return;
@@ -477,6 +498,9 @@ public class MonsterCtrl : MonoBehaviour
         if (m_CurHp <= 0.0f)
         {
             m_CurHp = 0.0f;
+            m_bosshpBarObj.SetActive(false);
+            MonsterDie();
+            GameMgr.Inst.SpawnDia(transform.position);
         }
     }
 
@@ -493,7 +517,7 @@ public class MonsterCtrl : MonoBehaviour
 
     void OnDamaged()
     {
-        sprite.color = new Color(1, 1, 1, 0.4f);
+        sprite.color = new Color(1, 0, 0, 0.5f);
 
         Invoke("OffDamaged", 1);
     }

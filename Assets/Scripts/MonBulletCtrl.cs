@@ -19,7 +19,7 @@ public class MonBulletCtrl : MonoBehaviour
         transform.position += m_DirVec * Time.deltaTime * m_MoveSpeed;
     }
 
-    public void MBulletSpawn(Vector3 a_StPos, Vector3 a_DirVec, float a_Speed, float att = 20.0f)
+    public void MBulletSpawn(Vector3 a_StPos, Vector3 a_DirVec, float a_Speed)
     {
         m_DirVec = a_DirVec;
         transform.position = new Vector3(a_StPos.x, a_StPos.y, 0.0f);

@@ -235,7 +235,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: "1000 \uACE8\uB4DC"
+  m_Text: "100 \uACE8\uB4DC"
 --- !u!1 &1417533703773670913
 GameObject:
   m_ObjectHideFlags: 0
@@ -871,7 +871,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: "1000 \uACE8\uB4DC"
+  m_Text: "100 \uACE8\uB4DC"
 --- !u!1 &1417533705042079273
 GameObject:
   m_ObjectHideFlags: 0
@@ -1084,6 +1084,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SkType: 0
+  m_StoreBoxObj: {fileID: 0}
   ExitBtn: {fileID: 3108239253345965383}
   m_StoreGold: {fileID: 3108239252134776537}
   m_ItemBtn: []

@@ -31,8 +31,8 @@ public class PlayerCtrl : MonoBehaviour
     float BulletSpeed = 10.0f;
 
     public Image m_HpBarImg = null;
-    public float initHp = 500.0f;
-    public float hp = 500.0f;
+    public static float initHp = 500.0f;
+    public static float hp = 500.0f;
 
     LayerMask playerState;
 
@@ -46,10 +46,13 @@ public class PlayerCtrl : MonoBehaviour
     float m_SdDuration = 10.0f; //15초 동안 발동
     public GameObject ShieldObj = null;
 
+    float m_ShootTime = 0.0f;
+    float m_ShootDelay = 0.5f;
 
     // Start is called before the first frame update
     void Start()
     {
+        GlobalValue.LoadGameData();
         Time.timeScale = 1;
 
         rigid = GetComponent<Rigidbody2D>();
@@ -60,13 +63,13 @@ public class PlayerCtrl : MonoBehaviour
         isDie = false;
 
         groundMask = 1 << LayerMask.NameToLayer("Platform") | 1 << LayerMask.NameToLayer("AirPlatform");
+
     }
 
     // Update is called once per frame
 
     void Update()
     {
-
         if (!isDie)
         {
             //이동
@@ -148,9 +151,8 @@ public class PlayerCtrl : MonoBehaviour
     {
         if (coll.gameObject.tag == "Monster")
         {
-            PlayerTakeDemaged(10);
+            PlayerTakeDemaged(20);
             OnDamaged(coll.transform.position);
-            Sound_Mgr.Instance.PlayGUISound("Hit", 1.0f);
 
         }
         if(coll.gameObject.tag == "Snail")
@@ -162,40 +164,35 @@ public class PlayerCtrl : MonoBehaviour
             }
             else
             {
-                PlayerTakeDemaged(50);
+                PlayerTakeDemaged(20);
                 OnDamaged(coll.transform.position);
-
-            }
-            Sound_Mgr.Instance.PlayGUISound("Hit", 1.0f);
+            }        
         }
 
         if(coll.gameObject.tag == "M_Bullet")   
         {
             Destroy(coll.gameObject);
-            PlayerTakeDemaged(50);
-            OnDamaged(coll.transform.position);
+            PlayerTakeDemaged(20);
+            OnDamaged();
             Sound_Mgr.Instance.PlayGUISound("Hit", 1.0f);
         }
 
         if(coll.gameObject.layer == LayerMask.NameToLayer("Trap"))
         {
-            PlayerTakeDemaged(50);
+            PlayerTakeDemaged(20);
             OnDamaged(coll.transform.position);
-            Sound_Mgr.Instance.PlayGUISound("Hit", 1.0f);
         }
 
         if (coll.gameObject.tag == "Boss")
         {
             PlayerTakeDemaged(50);
             OnDamaged(coll.transform.position);
-            Sound_Mgr.Instance.PlayGUISound("Hit", 1.0f);
         }
 
         if(coll.gameObject.layer == LayerMask.NameToLayer("Ball"))
         {
-            PlayerTakeDemaged(50);
+            PlayerTakeDemaged(20);
             OnDamaged(coll.transform.position);
-            Sound_Mgr.Instance.PlayGUISound("Hit", 1.0f);
         }
 
         if(coll.gameObject.name.Contains("DieZone"))
@@ -221,18 +218,29 @@ public class PlayerCtrl : MonoBehaviour
 
             Sound_Mgr.Instance.PlayGUISound("coin", 1.0f);
         }
-        if(coll.gameObject.CompareTag("Door"))
+        else if(coll.gameObject.CompareTag("Door"))
         {
             GameMgr.m_gameState = GameState.Boss;
 
+            PlayerPrefs.SetFloat("Hp", GlobalValue.g_Hp);
+
             SceneManager.LoadScene("BossScene");
             SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
-     
+
         }
 
-        if(coll.gameObject.name.Contains("Wall"))
+        else if(coll.gameObject.name.Contains("Wall"))
         {
             coll.isTrigger = true;
+        }
+
+        else if(coll.gameObject.name.Contains("Dia"))
+        {
+            GameMgr.m_gameState = GameState.Ending;
+
+            Destroy(coll.gameObject);
+            Sound_Mgr.Instance.PlayGUISound("coin", 1.0f);
+            GameMgr.Inst.GameEnding();
         }
 
     }
@@ -263,7 +271,9 @@ public class PlayerCtrl : MonoBehaviour
         {
             hp = 0;
             PlayerDie();
-        }              
+        }
+
+        Sound_Mgr.Instance.PlayGUISound("Hit", 1.0f);
     }
 
     public void UseSkill_Item(SkillType a_SkType)
@@ -273,6 +283,10 @@ public class PlayerCtrl : MonoBehaviour
             hp += (int)(initHp * 0.3f);
             GameMgr.Inst.DamageText(initHp * 0.3f, transform.position, new Color(0.18f, 0.5f, 0.34f));
 
+            GlobalValue.g_Hp += hp;
+
+            PlayerPrefs.SetFloat("Hp", GlobalValue.g_Hp);
+            
             if (initHp < hp)
                 hp = initHp;
 
@@ -341,6 +355,15 @@ public class PlayerCtrl : MonoBehaviour
         Invoke("OffDamaged", 1);
     }
 
+    void OnDamaged()
+    {
+        if (0.0f < m_SdOnTime)  //쉴드 스킬 발동 중일 때.. 데미지 스킬
+            return;
+
+        gameObject.layer = 10;
+        sprite.color = new Color(1, 1, 1, 0.4f);
+        Invoke("OffDamaged", 1);
+    }
     void OffDamaged()
     {
         gameObject.layer = 6;
@@ -351,8 +374,6 @@ public class PlayerCtrl : MonoBehaviour
     {
         isDie = true;      
         anim.SetTrigger("Die");
-        Time.timeScale = 0.0f;
-
         GameMgr.Inst.GameOver();
 
         Sound_Mgr.Instance.m_AudioSrc.clip = null;  //배경음 플레이 안함

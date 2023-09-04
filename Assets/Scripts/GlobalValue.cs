@@ -18,15 +18,16 @@ public class GlobalValue
 
     public static void LoadGameData()
     {
-        g_UserGold = PlayerPrefs.GetInt("UserGold", 0);
-        g_Hp = PlayerPrefs.GetFloat("Hp", 500.0f);
+        g_UserGold = PlayerPrefs.GetInt("UserGold",0);
+        g_Hp = PlayerPrefs.GetFloat("Hp",500);
         string a_Skill = "";
         for (int i = 0; i < g_SkillCount.Length; i++)
         {
             a_Skill = "SkItem_" + i.ToString();
-            g_SkillCount[i] = PlayerPrefs.GetInt("SkillCount", 0);
+            g_SkillCount[i] = PlayerPrefs.GetInt("SkillCount",0);
+        }
 
-        }       
-       PlayerPrefs.SetInt("UserGold", 0);
+        //PlayerPrefs.SetFloat("Hp",500);
+        //PlayerPrefs.SetInt("UserGold", 0);    
     }
 }
