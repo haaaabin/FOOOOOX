@@ -27,7 +27,7 @@ public class GlobalValue
             g_SkillCount[i] = PlayerPrefs.GetInt("SkillCount",0);
         }
 
-        //PlayerPrefs.SetFloat("Hp",500);
-        //PlayerPrefs.SetInt("UserGold", 0);    
+        PlayerPrefs.SetFloat("Hp",500);
+        PlayerPrefs.SetInt("UserGold", 0);    
     }
 }

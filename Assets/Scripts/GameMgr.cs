@@ -129,8 +129,7 @@ public class GameMgr : MonoBehaviour
             {
                 UseSkill_Key(SkillType.Skill_1);
             }
-        }
-        
+        }      
     }
 
     public void UseSkill_Key(SkillType a_SkType)
@@ -201,7 +200,7 @@ public class GameMgr : MonoBehaviour
         m_CurGold += value;
         GlobalValue.g_UserGold += value;
 
-        m_GoldText.text = m_CurGold.ToString();
+        m_GoldText.text = GlobalValue.g_UserGold.ToString();
         PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
     }
 
@@ -209,11 +208,12 @@ public class GameMgr : MonoBehaviour
     {
         if (GlobalValue.g_UserGold <= 0)
             GlobalValue.g_UserGold = 0;
+
         if (m_GoldText != null)
-            m_GoldText.text = m_CurGold.ToString();
+            m_GoldText.text = GlobalValue.g_UserGold.ToString();
 
         if (m_HpBarImg != null)
-            m_HpBarImg.fillAmount = GlobalValue.g_Hp / PlayerCtrl.initHp;
+            m_HpBarImg.fillAmount = PlayerCtrl.hp / PlayerCtrl.initHp;
 
     }
 

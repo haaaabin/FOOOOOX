@@ -264,6 +264,7 @@ public class PlayerCtrl : MonoBehaviour
         GlobalValue.g_Hp -= a_Value;
 
         PlayerPrefs.SetFloat("Hp", GlobalValue.g_Hp); 
+
         if (m_HpBarImg != null)
             m_HpBarImg.fillAmount = hp / initHp;
   
