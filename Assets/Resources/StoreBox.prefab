@@ -1092,7 +1092,7 @@ MonoBehaviour:
   m_ShieldBuyBtn: {fileID: 1417533704666968346}
   MessagePanel: {fileID: 4309052716966948587}
   messageText: {fileID: 8504068250704425606}
-  CloseBtn: {fileID: 1476911993466039033}
+  M_CloseBtn: {fileID: 1476911993466039033}
 --- !u!1 &3108239252134776539
 GameObject:
   m_ObjectHideFlags: 0

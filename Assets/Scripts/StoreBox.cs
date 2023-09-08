@@ -18,9 +18,8 @@ public class StoreBox : MonoBehaviour
 
     public GameObject MessagePanel = null;
     public Text messageText = null;
-    public Button CloseBtn = null;
+    public Button M_CloseBtn = null;
 
-    bool buying = true;
     // Start is called before the first frame update
     void Start()
     {
@@ -39,8 +38,8 @@ public class StoreBox : MonoBehaviour
         if (m_ShieldBuyBtn != null)
             m_ShieldBuyBtn.onClick.AddListener(BuyShieldItem);
 
-        if (CloseBtn != null)
-            CloseBtn.onClick.AddListener(() =>
+        if (M_CloseBtn != null)
+            M_CloseBtn.onClick.AddListener(() =>
             {
                 MessagePanel.SetActive(false);
             });

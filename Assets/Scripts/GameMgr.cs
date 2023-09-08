@@ -15,6 +15,11 @@ public enum GameState
 
 public class GameMgr : MonoBehaviour
 {
+    [HideInInspector] public SkillType m_SkType = SkillType.SkCount;
+    public static GameState m_gameState = GameState.Level1;
+    
+    PlayerCtrl m_Player = null;
+
     //---- 캐릭터 머리 위에 데미지 띄우기용 변수 선언
     GameObject m_DmgClone;  //Damage Text 복사본을 받을 변수
     DmgTextCtrl m_DmgText;  //Damage Text 복사본에 있는 DmgText_Ctrl 컴포넌트를 받을 변수
@@ -27,27 +32,18 @@ public class GameMgr : MonoBehaviour
     [Header(" ---- Store ----- ")]
     public Button m_StoreBtn = null;
     public GameObject m_StoreBoxObj = null;
+    public Text m_GoldText = null;
 
+    [Header(" ---- Coin, Dia ----- ")]
     public GameObject m_CoinItem = null;
     public GameObject m_DiaItem = null;
-    public Text m_GoldText = null;
     int m_CurGold = 0;
 
-    PlayerCtrl m_Player = null;
-
-
-    [HideInInspector] public SkillType m_SkType = SkillType.SkCount;
-
-    //--- 설정 ----
     [Header("---- Config -----")]
     public Button m_ConfigBtn = null;
     public GameObject Canvas_Dialog = null;
     [HideInInspector] public GameObject m_ConfigBoxObj = null;
     
-    public static GameMgr Inst = null;
-
-    public static GameState m_gameState = GameState.Level1;
-
     [Header("---- GameOver -----")]
     public GameObject GameOverPanel = null;
     public Button m_ReplayBtn = null;
@@ -60,6 +56,8 @@ public class GameMgr : MonoBehaviour
     public SkInvenNode[] m_SkInvenNode;     //Skill 인벤토리 연결 변수
 
     public Image m_HpBarImg = null;
+    public static GameMgr Inst = null;
+
 
     void Awake()
     {
@@ -214,12 +212,20 @@ public class GameMgr : MonoBehaviour
 
         if (m_HpBarImg != null)
             m_HpBarImg.fillAmount = PlayerCtrl.hp / PlayerCtrl.initHp;
+        
+        for (int i = 0; i <GlobalValue.g_SkillCount.Length; i++)
+        {
+            if (m_SkInvenNode.Length <= i)
+                return;
 
+            m_SkInvenNode[i].m_SkType = (SkillType)i;
+            m_SkInvenNode[i].m_SkCountText.text = GlobalValue.g_SkillCount[i].ToString();
+        }
     }
 
     public void RefreshSkill()
     {
-        for (int i = 0; i <GlobalValue.g_SkillCount.Length; i++)
+        for (int i = 0; i < GlobalValue.g_SkillCount.Length; i++)
         {
             if (m_SkInvenNode.Length <= i)
                 return;
