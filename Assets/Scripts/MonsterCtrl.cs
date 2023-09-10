@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum BossState
+public enum BossState   //보스 상태
 {
     Boss_Move,
     Boss_Attack,
@@ -26,58 +26,48 @@ public class MonsterCtrl : MonoBehaviour
     Rigidbody2D rigid;
     SpriteRenderer sprite;
     Animator anim;
-    PlayerCtrl Player = null;
-    CapsuleCollider2D capcoll;
 
+    //move
     public float MoveSpeed = 3;
     float RunSpeed = 5;
 
-    public int nextMove;
-
-    float shootTime = 0;
-    float shootDelay = 0.9f;
-
-    bool isDie = false;
-    
+    //hpBar
     public GameObject m_HpBarObj = null;
     public Image m_hpBarImg = null;
     float m_Hp = 100;
     [HideInInspector] public float m_CurHp = 100;
 
-    private Transform playerTr;
-
+    //--- Monster
+    public int turn = 1;
     [Header("--- Plant Monster --- ")]
     public GameObject m_MonBullet = null;
     public GameObject m_shootPos = null;
     public float Bulletspeed = 10.0f;
 
-
     [Header("--- Trunk Monster --- ")]
     public GameObject m_TMonBullet = null;
     public GameObject m_TshootPos = null;
 
-    public int turn = 1;
-
-    bool isChange;
-
-    float delay_time = 10;
-
-    //Boss
+    [Header("--- Boss --- ")]
     BossState m_BossState = BossState.Boss_Move;
     int m_ShootCount = 0;
     public GameObject m_bosshpBarObj = null;
     public Image m_bosshpBarImg = null;
-    public float Boss_Bulletspeed = 15.0f;
-
-    public GameObject ballPrefab = null;
-    float spawn = 0.5f;
-    float delta = 0.0f;
-    int fallCount = 0;
-
     public GameObject m_bossBullet = null;
+    public float Boss_Bulletspeed = 15.0f;
     public GameObject m_BShootPos = null;
 
+    [Header("--- Bullet --- ")]
+    public GameObject ballPrefab = null;
+    int fallCount = 0;
+    float shootTime = 0;
+    float shootDelay = 0.9f;
 
+    float delay_time = 10;
+    bool isChange;  //snail 애니메이션 변화 
+
+    bool isDie = false;
+    
     // Start is called before the first frame update
     void Start()
     {
@@ -86,10 +76,6 @@ public class MonsterCtrl : MonoBehaviour
         rigid = GetComponent<Rigidbody2D>();
         sprite = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
-        Player = GameObject.FindObjectOfType<PlayerCtrl>();
-        capcoll = GetComponent<CapsuleCollider2D>();
-
-        playerTr = GameObject.FindWithTag("Player").GetComponent<Transform>();
 
         if (m_MonType == MonType.Walk_Monster)
         {
@@ -106,9 +92,7 @@ public class MonsterCtrl : MonoBehaviour
             GameMgr.m_gameState = GameState.Boss;
             m_Hp = 5000.0f;
             m_CurHp = m_Hp;          
-        }
-
- 
+        } 
     }
 
     // Update is called once per frame
@@ -131,155 +115,6 @@ public class MonsterCtrl : MonoBehaviour
         }
     }
 
-    void Boss_AI()
-    {
-        Collider2D a_Coll = Physics2D.OverlapBox(transform.position, new Vector2(20, 20), 0, LayerMask.GetMask("Player"));
-        if (a_Coll != null)
-        {
-            if (m_bosshpBarObj != null)
-                m_bosshpBarObj.SetActive(true);          
-        }
-
-        if (m_BossState == BossState.Boss_Move)
-        {
-            rigid.velocity = new Vector2(-turn * 4, rigid.velocity.y);
-
-            Vector2 frontVec = new Vector2(rigid.position.x + (-turn * 2.8f), rigid.position.y);
-            Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
-            RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1, LayerMask.GetMask("Wall"));
-            if (rayGHit.collider != null)
-            {
-                turn *= -1;
-            }
-            if (turn != 0)
-                sprite.flipX = turn == -1;
-
-            delay_time -= Time.deltaTime;
-            if (delay_time <= 0.0f)
-            {
-                delay_time = 1f;
-                shootTime = 0.5f;
-                m_BossState = BossState.Fall_Bull;
-            }
-        }
-        else if (m_BossState == BossState.Fall_Bull)
-        {
-            delay_time -= Time.deltaTime;
-            if (delay_time <= 0.0f)
-            {
-                rigid.velocity = new Vector2(-turn * 5, rigid.velocity.y);
-                Vector2 frontVec = new Vector2(rigid.position.x + (-turn * 2.8f), rigid.position.y);
-                Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
-                RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1, LayerMask.GetMask("Wall"));
-                if (rayGHit.collider != null)
-                {
-                    turn *= -1;
-                }
-                if (turn != 0)
-                    sprite.flipX = turn == -1;
-
-                shootTime -= Time.deltaTime;
-                if (shootTime <= 0.0f)
-                {
-                    GameObject go = Instantiate(ballPrefab) as GameObject;
-
-                    int dropPosX = Random.Range(23, 38);
-                    go.transform.position = new Vector3(dropPosX, 6.2f, 0.0f);
-
-                    fallCount++;
-                    if (fallCount < 14)
-                        shootTime = 0.5f;   //공 떨어트리기 
-                    else
-                    {
-                        fallCount = 0;
-                        shootTime = 0.5f;
-                        delay_time = 1;
-                        m_BossState = BossState.Boss_Attack;
-
-                    }
-
-                    Sound_Mgr.Instance.PlayGUISound("Fall", 1.2f);
-                }
-            }
-
-        }
-        else if (m_BossState == BossState.Boss_Attack)
-        {
-            delay_time -= Time.deltaTime;
-            if(delay_time <= 0.0f)
-            {
-                sprite.color = new Color(1, 0, 0, 1);
-
-                anim.SetBool("Attack", true);
-
-                rigid.velocity = new Vector2(-turn * 9, rigid.velocity.y);
-                Vector2 frontVec = new Vector2(rigid.position.x + (-turn * 2.8f), rigid.position.y);
-                Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
-                RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1, LayerMask.GetMask("Wall"));
-                if (rayGHit.collider != null)
-                {
-                    turn *= -1;
-                }
-                if (turn != 0)
-                    sprite.flipX = turn == -1;
-
-                shootTime -= Time.deltaTime;
-                if (shootTime <= 0.0f)
-                {
-                    MonBulletCtrl a_BulletSc = null;
-
-                    Vector3 a_Pos;
-                    GameObject a_CloneObj = null;
-                    for (int i = 0; i < 2; i++)
-                    {
-                        a_CloneObj = (GameObject)Instantiate(m_bossBullet);
-                        a_Pos = m_BShootPos.transform.position;
-                        a_Pos.y -= 0.4f - (i * 1.2f);
-                        a_CloneObj.transform.position = a_Pos;
-                        a_BulletSc = a_CloneObj.GetComponent<MonBulletCtrl>();
-                        a_BulletSc.MBulletSpawn(a_CloneObj.transform.position, Vector3.left * turn, Boss_Bulletspeed);
-                    }
-
-                    m_ShootCount++;
-                    if (m_ShootCount < 19)
-                        shootTime = 0.7f;
-                    else
-                    {
-                        sprite.color = new Color(1, 1, 1, 1);
-
-                        anim.SetBool("Attack", false);
-                        m_ShootCount = 0;
-                        delay_time = 10.0f;
-                        m_BossState = BossState.Boss_Move;
-                    }
-                }
-            }
-           
-        }
-    }
-
-    void CheckPlatform()
-    {
-        Vector2 frontVec = new Vector2(rigid.position.x + turn, rigid.position.y - 0.8f);
-        Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
-        RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1, LayerMask.GetMask("Platform"));
-        if (rayGHit.collider == null)
-        {
-            turn *= -1;
-        }
-        if (turn != 0)
-            sprite.flipX = turn == 1;
-    }
-
-    void Snail_AI()
-    {
-        rigid.velocity = new Vector2(turn, rigid.velocity.y);       
-        if(isChange ==true)
-        {
-             rigid.velocity = new Vector2(turn * 7, rigid.velocity.y);
-        }
-        CheckPlatform();
-    }
     void WalkMonster_AI()
     {
         rigid.velocity = new Vector2(turn, rigid.velocity.y);
@@ -297,7 +132,6 @@ public class MonsterCtrl : MonoBehaviour
 
         if (a_Coll != null)
         {
- 
             anim.SetBool("Attack", true);
 
             if (a_Coll.transform.position.x < transform.position.x)  //Left
@@ -339,12 +173,22 @@ public class MonsterCtrl : MonoBehaviour
         }
     }
 
+    void Snail_AI()
+    {
+        rigid.velocity = new Vector2(turn, rigid.velocity.y);
+        if (isChange == true)
+        {
+            rigid.velocity = new Vector2(turn * 7, rigid.velocity.y);
+        }
+        CheckPlatform();
+    }
+
     void Attack_AI()
     {
         rigid.velocity = new Vector2(turn * MoveSpeed, rigid.velocity.y);
         CheckPlatform();
 
-        Collider2D a_Coll = Physics2D.OverlapBox(transform.position, new Vector2(20, 10), 0, LayerMask.GetMask("Player"));
+        Collider2D a_Coll = Physics2D.OverlapBox(transform.position, new Vector2(20, 6), 0, LayerMask.GetMask("Player"));
         if (a_Coll != null)
         {
             MoveSpeed = 0f;
@@ -356,7 +200,7 @@ public class MonsterCtrl : MonoBehaviour
                 shootTime += Time.deltaTime;
                 if (0.55f <= shootTime)
                 {
-                    if (m_TMonBullet != null)
+                    if (m_TMonBullet != null)   //총알 발사
                     {
                         GameObject a_NewObj = Instantiate(m_TMonBullet) as GameObject;
                         MonBulletCtrl a_Bullet = a_NewObj.GetComponent<MonBulletCtrl>();
@@ -388,33 +232,140 @@ public class MonsterCtrl : MonoBehaviour
         }
     }
 
-    //void WalkJumpMonster_AI()
-    //{
-    //    rigid.velocity = new Vector2(nextMove * 2f, rigid.velocity.y);
+    void Boss_AI()
+    {
+        Collider2D a_Coll = Physics2D.OverlapBox(transform.position, new Vector2(20, 20), 0, LayerMask.GetMask("Player"));
+        if (a_Coll != null)
+        {
+            if (m_bosshpBarObj != null)
+                m_bosshpBarObj.SetActive(true);          
+        }
 
-    //    Vector2 frontVec = new Vector2(rigid.position.x + nextMove * 0.8f, rigid.position.y - 0.8f);
-    //    Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
-    //    RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1, LayerMask.GetMask("Platform"));
-    //    if (rayGHit.collider == null)
-    //    {
-    //        nextMove *= -1;
-    //        CancelInvoke();
-    //        Invoke("Think", 3);
-    //    }
+        if (m_BossState == BossState.Boss_Move)
+        {
+            rigid.velocity = new Vector2(-turn * 4, rigid.velocity.y);
 
-    //}
+            Vector2 frontVec = new Vector2(rigid.position.x + (-turn * 2.8f), rigid.position.y);
+            Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
+            RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1, LayerMask.GetMask("Wall"));
+            if (rayGHit.collider != null)
+            {
+                turn *= -1;
+            }
+            if (turn != 0)
+                sprite.flipX = turn == -1;
 
-    //void Think()
-    //{
-    //    nextMove = Random.Range(-1, 2);
+            delay_time -= Time.deltaTime;
+            if (delay_time <= 0.0f)
+            {
+                delay_time = 1f;
+                shootTime = 0.5f;
+                m_BossState = BossState.Fall_Bull;
+            }
+        }
+        else if (m_BossState == BossState.Fall_Bull)   //공 떨어트리기 
+        {
+            delay_time -= Time.deltaTime;
+            if (delay_time <= 0.0f)
+            {
+                rigid.velocity = new Vector2(-turn * 5, rigid.velocity.y);
+                Vector2 frontVec = new Vector2(rigid.position.x + (-turn * 2.8f), rigid.position.y);
+                Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
+                RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1, LayerMask.GetMask("Wall"));
+                if (rayGHit.collider != null)
+                {
+                    turn *= -1;
+                }
+                if (turn != 0)
+                    sprite.flipX = turn == -1;
 
-    //    anim.SetInteger("WalkSpeed", nextMove);
-    //    if (nextMove != 0)
-    //        sprite.flipX = nextMove == 1;
+                shootTime -= Time.deltaTime;
+                if (shootTime <= 0.0f)
+                {
+                    GameObject go = Instantiate(ballPrefab) as GameObject;
 
-    //    Invoke("Think", 3);
-    //}
+                    int dropPosX = Random.Range(23, 38);
+                    go.transform.position = new Vector3(dropPosX, 6.2f, 0.0f);
 
+                    fallCount++;
+                    if (fallCount < 14)
+                        shootTime = 0.5f; 
+                    else
+                    {
+                        fallCount = 0;
+                        shootTime = 0.5f;
+                        delay_time = 1;
+                        m_BossState = BossState.Boss_Attack;
+                    }
+                    Sound_Mgr.Instance.PlayGUISound("Fall", 1.2f);
+                }
+            }
+        }
+        else if (m_BossState == BossState.Boss_Attack)  //이동 & 공격 
+        {
+            delay_time -= Time.deltaTime;
+            if(delay_time <= 0.0f)
+            {
+                sprite.color = new Color(1, 0, 0, 1);
+
+                anim.SetBool("Attack", true);
+
+                rigid.velocity = new Vector2(-turn * 9, rigid.velocity.y);
+                Vector2 frontVec = new Vector2(rigid.position.x + (-turn * 2.8f), rigid.position.y);
+                Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
+                RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1, LayerMask.GetMask("Wall"));
+                if (rayGHit.collider != null)
+                {
+                    turn *= -1;
+                }
+                if (turn != 0)
+                    sprite.flipX = turn == -1;
+
+                shootTime -= Time.deltaTime;
+                if (shootTime <= 0.0f)
+                {
+                    MonBulletCtrl a_BulletSc = null;
+
+                    Vector3 a_Pos;
+                    GameObject a_CloneObj = null;
+                    for (int i = 0; i < 2; i++)
+                    {
+                        a_CloneObj = (GameObject)Instantiate(m_bossBullet);
+                        a_Pos = m_BShootPos.transform.position;
+                        a_Pos.y -= 0.4f - (i * 1.2f);
+                        a_CloneObj.transform.position = a_Pos;
+                        a_BulletSc = a_CloneObj.GetComponent<MonBulletCtrl>();
+                        a_BulletSc.MBulletSpawn(a_CloneObj.transform.position, Vector3.left * turn, Boss_Bulletspeed);
+                    }
+                    m_ShootCount++;
+                    if (m_ShootCount < 19)
+                        shootTime = 0.7f;
+                    else
+                    {
+                        sprite.color = new Color(1, 1, 1, 1);
+                        anim.SetBool("Attack", false);
+                        m_ShootCount = 0;
+                        delay_time = 10.0f;
+                        m_BossState = BossState.Boss_Move;
+                    }
+                }
+            }  
+        }
+    }
+
+    void CheckPlatform()
+    {
+        Vector2 frontVec = new Vector2(rigid.position.x + turn, rigid.position.y - 0.8f);
+        Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
+        RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1, LayerMask.GetMask("Platform"));
+        if (rayGHit.collider == null)
+        {
+            turn *= -1;
+        }
+        if (turn != 0)
+            sprite.flipX = turn == 1;
+    }
+  
     void OnCollisionEnter2D(Collision2D coll)
     {
         if (coll.gameObject.tag == "P_Bullet")
@@ -428,13 +379,13 @@ public class MonsterCtrl : MonoBehaviour
                 Destroy(coll.gameObject);
                 TakeDemaged();
             }
-
             if(m_MonType == MonType.Boss)
             {
                 BossTakeDemaged();
                 OnDamaged();
             }
         }
+
         if(coll.gameObject.tag == "Shield")
         {
             if(coll.gameObject.layer == LayerMask.NameToLayer("Monster"))
@@ -481,8 +432,7 @@ public class MonsterCtrl : MonoBehaviour
                 GameMgr.Inst.SpawnCoin(transform.position);
                 MonsterDie();
             }
-        }
-        
+        }       
     }
 
     public void BossTakeDemaged(float a_Value = 50)
@@ -504,10 +454,11 @@ public class MonsterCtrl : MonoBehaviour
         }
     }
 
-
     public void MonsterDie()
     {
         isDie = true;
+
+        //죽으면 업되면서 바닥으로 떨어지게
         rigid.velocity = Vector2.zero;
         gameObject.GetComponentInChildren<CapsuleCollider2D>().enabled = false;
         rigid.AddForce(Vector2.up * 5, ForceMode2D.Impulse);

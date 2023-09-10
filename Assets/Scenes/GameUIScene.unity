@@ -885,14 +885,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce12b1511dc94774aa33806e1910db77, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_SkType: 2
   m_Damage_Canvas: {fileID: 469781837}
   m_DamageRoot: {fileID: 1550618029450412704, guid: 33770d6c8f516c14485018e7df1bcdb5, type: 3}
   m_StoreBtn: {fileID: 1569768368}
   m_StoreBoxObj: {fileID: 797160474}
+  m_GoldText: {fileID: 1633877430}
   m_CoinItem: {fileID: 4456373416328287422, guid: d5ba5eef2f6934a4fadf858b1c9aa23b, type: 3}
   m_DiaItem: {fileID: 8133223092052540902, guid: dc2e7198045e7c745831001a8ba39330, type: 3}
-  m_GoldText: {fileID: 1633877430}
-  m_SkType: 2
   m_ConfigBtn: {fileID: 362400825}
   Canvas_Dialog: {fileID: 1166592184}
   m_ConfigBoxObj: {fileID: 8644034441348681775, guid: c78ee0c7fb05a314e94cedc4fbd2e3e0, type: 3}
@@ -934,7 +934,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IsFadeOut: 0
-  IsFadeIn: 0
+  IsFadeIn: 1
 --- !u!1 &728306730
 GameObject:
   m_ObjectHideFlags: 0

@@ -107,7 +107,6 @@ public class GameMgr : MonoBehaviour
         else if(SceneManager.GetActiveScene().name == "BossScene")
         {
             Sound_Mgr.Instance.PlayBGM("Maniac", 1.0f);
-
         }
     }
     
@@ -268,6 +267,7 @@ public class GameMgr : MonoBehaviour
             });
 
     }
+
     public void GameEnding()
     {
         m_gameState = GameState.Ending;
