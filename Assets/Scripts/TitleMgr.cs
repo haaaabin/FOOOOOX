@@ -21,7 +21,7 @@ public class TitleMgr : MonoBehaviour
             {
                 if (Fade_Mgr.Inst != null && Fade_Mgr.Inst.IsFadeOut == true)
                 {
-                    Fade_Mgr.Inst.SceneOut("GameUIScene");
+                    Fade_Mgr.Inst.SceneOuts("Level1", "GameUIScene");
 
                 }
                 else

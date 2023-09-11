@@ -2160,8 +2160,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e52f677ac83120b40b0642fb931e36c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IsFadeOut: 0
-  IsFadeIn: 1
+  IsFadeOut: 1
+  IsFadeIn: 0
 --- !u!1 &420509158
 GameObject:
   m_ObjectHideFlags: 0
@@ -3450,7 +3450,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1882418023
 RectTransform:
   m_ObjectHideFlags: 0

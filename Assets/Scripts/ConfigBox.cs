@@ -8,7 +8,7 @@ public class ConfigBox : MonoBehaviour
 {
     public Button m_Close_Btn = null;
     public Button m_DiscriptionBtn = null;
-    public Button m_GameEndBtn = null;
+    public Button m_GameExitBtn = null;
 
     public Toggle m_Sound_Toggle = null;
     public Slider m_Sound_Slider = null;
@@ -26,17 +26,22 @@ public class ConfigBox : MonoBehaviour
         if (m_DiscriptionBtn != null)
             m_DiscriptionBtn.onClick.AddListener(() =>
             {
-
+                                                                                                                                            
             });
 
-        if (m_GameEndBtn != null)
-            m_GameEndBtn.onClick.AddListener(() =>
+        if (m_GameExitBtn != null)
+            m_GameExitBtn.onClick.AddListener(() =>
             {
                 PlayerPrefs.DeleteAll();
+
                 if (Fade_Mgr.Inst != null && Fade_Mgr.Inst.IsFadeOut == true)
+                {
                     Fade_Mgr.Inst.SceneOut("TitleScene");
+                }
                 else
+                {
                     SceneManager.LoadScene("TitleScene");
+                }
             });
 
         // 체크 상태가 변경되었을 때 호출되는 함수를 대기하는 코드

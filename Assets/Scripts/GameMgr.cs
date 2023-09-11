@@ -43,7 +43,8 @@ public class GameMgr : MonoBehaviour
     public Button m_ConfigBtn = null;
     public GameObject Canvas_Dialog = null;
     [HideInInspector] public GameObject m_ConfigBoxObj = null;
-    
+
+
     [Header("---- GameOver -----")]
     public GameObject GameOverPanel = null;
     public Button m_ReplayBtn = null;
@@ -96,7 +97,21 @@ public class GameMgr : MonoBehaviour
 
                 Time.timeScale = 0.0f;
             });
-         
+
+        if (m_GameExitBtn != null)
+            m_GameExitBtn.onClick.AddListener(() =>
+            {
+                PlayerPrefs.DeleteAll();
+                SceneManager.LoadScene("TitleScene");
+            });
+
+        if (m_ReplayBtn != null)
+            m_ReplayBtn.onClick.AddListener(() =>
+            {
+                SceneManager.LoadScene("Level1");
+                SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
+            });
+
         m_Player = GameObject.FindObjectOfType<PlayerCtrl>();
 
         if(SceneManager.GetActiveScene().name == "Level1")
@@ -126,7 +141,7 @@ public class GameMgr : MonoBehaviour
             {
                 UseSkill_Key(SkillType.Skill_1);
             }
-        }      
+        }
     }
 
     public void UseSkill_Key(SkillType a_SkType)
@@ -245,27 +260,6 @@ public class GameMgr : MonoBehaviour
         if (GameOverPanel != null && GameOverPanel.activeSelf == false)
             GameOverPanel.SetActive(true);
 
-        if (m_ReplayBtn != null)
-            m_ReplayBtn.onClick.AddListener(() =>
-            {
-                if (Fade_Mgr.Inst != null && Fade_Mgr.Inst.IsFadeOut == true)
-                    Fade_Mgr.Inst.SceneOut("Level1");
-                else
-                {
-                    SceneManager.LoadScene("Level1");
-                    SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
-                }
-            });
-
-        if (m_GameExitBtn != null)
-            m_GameExitBtn.onClick.AddListener(() =>
-            {
-                if (Fade_Mgr.Inst != null && Fade_Mgr.Inst.IsFadeOut == true)
-                    Fade_Mgr.Inst.SceneOut("TitleScene");
-                else
-                    SceneManager.LoadScene("TitleScene");
-            });
-
     }
 
     public void GameEnding()
@@ -285,7 +279,7 @@ public class GameMgr : MonoBehaviour
             m_ReplayBtn.onClick.AddListener(() =>
             {
                 if (Fade_Mgr.Inst != null && Fade_Mgr.Inst.IsFadeOut == true)
-                    Fade_Mgr.Inst.SceneOut("Level1");
+                    Fade_Mgr.Inst.SceneOuts("Level1", "GameUIScene");
                 else
                 {
                     SceneManager.LoadScene("Level1");
