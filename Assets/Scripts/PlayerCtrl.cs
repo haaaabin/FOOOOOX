@@ -226,7 +226,6 @@ public class PlayerCtrl : MonoBehaviour
 
             SceneManager.LoadScene("BossScene");
             SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
-
         }
 
         else if(coll.gameObject.name.Contains("Wall"))

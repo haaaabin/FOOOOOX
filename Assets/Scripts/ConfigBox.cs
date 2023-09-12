@@ -33,15 +33,7 @@ public class ConfigBox : MonoBehaviour
             m_GameExitBtn.onClick.AddListener(() =>
             {
                 PlayerPrefs.DeleteAll();
-
-                if (Fade_Mgr.Inst != null && Fade_Mgr.Inst.IsFadeOut == true)
-                {
-                    Fade_Mgr.Inst.SceneOut("TitleScene");
-                }
-                else
-                {
-                    SceneManager.LoadScene("TitleScene");
-                }
+                SceneManager.LoadScene("TitleScene");
             });
 
         // 체크 상태가 변경되었을 때 호출되는 함수를 대기하는 코드

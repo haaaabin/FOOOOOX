@@ -19,16 +19,11 @@ public class TitleMgr : MonoBehaviour
         if (m_StartGameBtn != null)
             m_StartGameBtn.onClick.AddListener(() =>
             {
-                if (Fade_Mgr.Inst != null && Fade_Mgr.Inst.IsFadeOut == true)
-                {
-                    Fade_Mgr.Inst.SceneOuts("Level1", "GameUIScene");
 
-                }
-                else
-                {
-                    SceneManager.LoadScene("Level1");
-                    SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
-                }
+                FadeMgr.Inst.Fade();
+                SceneManager.LoadScene("Level1");
+                SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
+                
             });
 
         if (m_GameDescriptionBtn != null)

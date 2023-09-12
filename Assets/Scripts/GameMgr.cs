@@ -278,22 +278,14 @@ public class GameMgr : MonoBehaviour
         if (m_ReplayBtn != null)
             m_ReplayBtn.onClick.AddListener(() =>
             {
-                if (Fade_Mgr.Inst != null && Fade_Mgr.Inst.IsFadeOut == true)
-                    Fade_Mgr.Inst.SceneOuts("Level1", "GameUIScene");
-                else
-                {
-                    SceneManager.LoadScene("Level1");
-                    SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
-                }
+                SceneManager.LoadScene("Level1");
+                SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
             });
 
         if (m_GameExitBtn != null)
             m_GameExitBtn.onClick.AddListener(() =>
             {
-                if (Fade_Mgr.Inst != null && Fade_Mgr.Inst.IsFadeOut == true)
-                    Fade_Mgr.Inst.SceneOut("TitleScene");
-                else
-                    SceneManager.LoadScene("TitleScene");
+                SceneManager.LoadScene("TitleScene");
             });
     }
 

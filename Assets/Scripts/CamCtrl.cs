@@ -28,6 +28,11 @@ public class CamCtrl : MonoBehaviour
         {
             targetPos = new Vector3(target.position.x, 0, this.transform.position.z);
             maxCameraBoundary = new Vector2(31.3f, 0);
+
+            if (target.position.x > 22)
+            {
+                minCameraBoundary = new Vector2(31.0f, 0);
+            }
         }
 
 
