@@ -123,7 +123,7 @@ CapsuleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.011583328, y: -1.5663362}
+  m_Offset: {x: 0.011583328, y: -1.56}
   m_Size: {x: 3.6697502, y: 3.6697502}
   m_Direction: 0
 --- !u!95 &7259004893993660605
@@ -161,21 +161,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_MonType: 5
   MoveSpeed: 3
-  nextMove: 0
   m_HpBarObj: {fileID: 0}
   m_hpBarImg: {fileID: 0}
   m_CurHp: 100
+  turn: 1
   m_MonBullet: {fileID: 0}
   m_shootPos: {fileID: 0}
   Bulletspeed: 10
   m_TMonBullet: {fileID: 0}
   m_TshootPos: {fileID: 0}
-  turn: 1
   m_bosshpBarObj: {fileID: 0}
   m_bosshpBarImg: {fileID: 0}
-  ballPrefab: {fileID: 6311710483751677310, guid: d794f20753bebc24c8dc8cac73c2526a, type: 3}
   m_bossBullet: {fileID: 4776504973887125669, guid: a8eb257d80ae3724dbdad6d8dabe0738, type: 3}
+  Boss_Bulletspeed: 15
   m_BShootPos: {fileID: 7259004894430475052}
+  ballPrefab: {fileID: 6311710483751677310, guid: d794f20753bebc24c8dc8cac73c2526a, type: 3}
 --- !u!1 &7259004894430475052
 GameObject:
   m_ObjectHideFlags: 0

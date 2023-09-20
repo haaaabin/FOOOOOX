@@ -33,6 +33,8 @@ public class ConfigBox : MonoBehaviour
             m_GameExitBtn.onClick.AddListener(() =>
             {
                 PlayerPrefs.DeleteAll();
+                PlayerCtrl.initHp = 500;
+                PlayerCtrl.hp = 500;
                 SceneManager.LoadScene("TitleScene");
             });
 

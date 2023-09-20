@@ -11,7 +11,7 @@ public class StoreBox : MonoBehaviour
     public Button ExitBtn = null;
     public Text m_StoreGold = null;
 
-    public Button[] m_ItemBtn;
+    public static int[] skill = new int[2];
 
     public Button m_LifeBuyBtn = null;
     public Button m_ShieldBuyBtn = null;
@@ -64,6 +64,7 @@ public class StoreBox : MonoBehaviour
             m_SkType = SkillType.Skill_0;
             int a_SkIdx = (int)m_SkType;    //인덱스로 변환
             GlobalValue.g_SkillCount[a_SkIdx]++;
+            skill[a_SkIdx]++;
 
             string a_Skill = "SkItem_" + (a_SkIdx).ToString();
             PlayerPrefs.SetInt(a_Skill, GlobalValue.g_SkillCount[a_SkIdx]);
@@ -87,6 +88,7 @@ public class StoreBox : MonoBehaviour
             m_SkType = SkillType.Skill_1;
             int a_SkIdx = (int)m_SkType;    //인덱스로 변환
             GlobalValue.g_SkillCount[a_SkIdx]++;
+            skill[a_SkIdx]++;
 
             string a_Skill = "SkItem_" + (a_SkIdx).ToString();
             PlayerPrefs.SetInt(a_Skill, GlobalValue.g_SkillCount[a_SkIdx]);

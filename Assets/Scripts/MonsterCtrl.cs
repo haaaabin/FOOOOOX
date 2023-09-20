@@ -48,9 +48,12 @@ public class MonsterCtrl : MonoBehaviour
     public GameObject m_TMonBullet = null;
     public GameObject m_TshootPos = null;
 
-    [Header("--- Boss --- ")]
+    //--Boss
+
     BossState m_BossState = BossState.Boss_Move;
     int m_ShootCount = 0;
+    
+    [Header("--- Boss --- ")]
     public GameObject m_bosshpBarObj = null;
     public Image m_bosshpBarImg = null;
     public GameObject m_bossBullet = null;
@@ -400,6 +403,9 @@ public class MonsterCtrl : MonoBehaviour
         anim.SetTrigger("Hit");
 
         m_CurHp -= a_Value;
+
+        if (m_HpBarObj == null)
+            return;
 
         if (m_HpBarObj != null)
             m_HpBarObj.SetActive(true);

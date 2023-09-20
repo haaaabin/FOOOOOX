@@ -216,7 +216,7 @@ public class GameMgr : MonoBehaviour
         PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
     }
 
-    void InitRefreshUI()
+    public void InitRefreshUI()
     {
         if (GlobalValue.g_UserGold <= 0)
             GlobalValue.g_UserGold = 0;
@@ -227,13 +227,13 @@ public class GameMgr : MonoBehaviour
         if (m_HpBarImg != null)
             m_HpBarImg.fillAmount = PlayerCtrl.hp / PlayerCtrl.initHp;
         
-        for (int i = 0; i <GlobalValue.g_SkillCount.Length; i++)
+        for (int i = 0; i < StoreBox.skill.Length; i++)
         {
             if (m_SkInvenNode.Length <= i)
                 return;
 
             m_SkInvenNode[i].m_SkType = (SkillType)i;
-            m_SkInvenNode[i].m_SkCountText.text = GlobalValue.g_SkillCount[i].ToString();
+            m_SkInvenNode[i].m_SkCountText.text = StoreBox.skill[i].ToString();
         }
     }
 
@@ -256,6 +256,8 @@ public class GameMgr : MonoBehaviour
         Time.timeScale = 0.0f;
 
         PlayerPrefs.DeleteAll();
+        PlayerCtrl.initHp = 500;
+        PlayerCtrl.hp = 500;
 
         if (GameOverPanel != null && GameOverPanel.activeSelf == false)
             GameOverPanel.SetActive(true);

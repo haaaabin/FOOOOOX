@@ -20,7 +20,6 @@ public class TitleMgr : MonoBehaviour
             m_StartGameBtn.onClick.AddListener(() =>
             {
 
-                FadeMgr.Inst.Fade();
                 SceneManager.LoadScene("Level1");
                 SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
                 

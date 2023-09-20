@@ -821,7 +821,7 @@ MonoBehaviour:
   m_ConfigBoxObj: {fileID: 8644034441348681775, guid: c78ee0c7fb05a314e94cedc4fbd2e3e0, type: 3}
   GameOverPanel: {fileID: 387089459}
   m_ReplayBtn: {fileID: 852666341}
-  m_GameExitBtn: {fileID: 2449400209633371133, guid: 1ba01cfbe40a5b14699c6427baf855b3, type: 3}
+  m_GameExitBtn: {fileID: 2146755657}
   m_titleTxt: {fileID: 989681652}
   m_SkCoolPrefab: {fileID: 3612345478279076019, guid: 1dab20ec0279334489aa01aa3bc3e0b5, type: 3}
   m_SkCoolRoot: {fileID: 1057978519}
@@ -1891,8 +1891,8 @@ RectTransform:
   - {fileID: 1907245428}
   - {fileID: 387089460}
   - {fileID: 1057978519}
-  - {fileID: 797160473}
   - {fileID: 2115140886}
+  - {fileID: 797160473}
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2786,7 +2786,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1166592188}
-  m_RootOrder: 9
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -2831,6 +2831,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2115140885}
   m_CullTransparentMesh: 1
+--- !u!114 &2146755657 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2449400209633371133, guid: 1ba01cfbe40a5b14699c6427baf855b3, type: 3}
+  m_PrefabInstance: {fileID: 2449400209701352951}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &2449400209701352951
 PrefabInstance:
   m_ObjectHideFlags: 0
