@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class AudioNode : MonoBehaviour
 {
-    [HideInInspector] public AudioSource m_AudioSrc = null;     // °¢ ·¹ÀÌ¾îº° AudioSource ÄÄÆ÷³ÍÆ®¸¦ ÀúÀåÇÏ±â À§ÇÑ º¯¼ö
-    [HideInInspector] public float m_EffVolume = 0.2f;           // °¢ ·¹ÀÌ¾îº° »ç¿îµå º¼·ý
-    [HideInInspector] public float m_PlayTime = 0.0f;           // °¢ ·¹ÀÌ¾îº° Å¸ÀÌ¸Ó
+    [HideInInspector] public AudioSource m_AudioSrc = null;     // ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¾îº° AudioSource ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    [HideInInspector] public float m_EffVolume = 0.2f;           // ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¾îº° ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    [HideInInspector] public float m_PlayTime = 0.0f;           // ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¾îº° Å¸ï¿½Ì¸ï¿½
 
     void Update()
     {
@@ -15,23 +15,21 @@ public class AudioNode : MonoBehaviour
     }
 }
 
-public class Sound_Mgr : G_Singleton<Sound_Mgr>
+public class SoundManager : G_Singleton<SoundManager>
 {
     [HideInInspector] public AudioSource m_AudioSrc = null;
-    Dictionary<string, AudioClip> m_ADClipList = new Dictionary<string, AudioClip>();   //Dictonary·Î Å¬¸³ ÆÄÀÏ¸í ÀúÀå
+    Dictionary<string, AudioClip> m_ADClipList = new Dictionary<string, AudioClip>(); 
 
-    //--- È¿°úÀ½ ÃÖÀûÈ­¸¦ À§ÇÑ ¹öÆÛ º¯¼ö
-    int m_EffSdCount = 20;      // Áö±ÝÀº 20°³ÀÇ ·¹ÀÌ¾î·Î ÇÃ·¹ÀÌ...
+    int m_EffSdCount = 20;
     List<AudioNode> m_AudNodeList = new List<AudioNode>();
-    //--- È¿°úÀ½ ÃÖÀûÈ­¸¦ À§ÇÑ ¹öÆÛ º¯¼ö
-
+ 
     float m_bgmVolume = 0.2f;
     [HideInInspector] public bool m_SoundOnOff = true;
     [HideInInspector] public float m_SoundVolume = 1.0f;
 
-    protected override void Init()  //Awake() ÇÔ¼ö ´ë½Å »ç¿ë
+    protected override void Init()
     {
-        base.Init();    // ºÎ¸ðÂÊ¿¡ ÀÖ´Â Init() ÇÔ¼ö È£Ãâ
+        base.Init();
 
         LoadChildGameObj();
     }
@@ -39,34 +37,26 @@ public class Sound_Mgr : G_Singleton<Sound_Mgr>
     // Start is called before the first frame update
     void Start()
     {
-        // --- »ç¿îµå ¹Ì¸® ·Îµù
         AudioClip a_GAudioiClip = null;
         object[] temp = Resources.LoadAll("Sounds");
         for (int ii = 0; ii < temp.Length; ii++)
         {
-            a_GAudioiClip = temp[ii] as AudioClip;  // a_GAudioiClip¿¡ »ç¿îµå ·Îµù
+            a_GAudioiClip = temp[ii] as AudioClip; 
 
-            if (m_ADClipList.ContainsKey(a_GAudioiClip.name) == true)   //ÀÌ¹Ì ÀúÀåµÇ¾îÀÖÀ¸¸é ³Ñ°Ü
+            if (m_ADClipList.ContainsKey(a_GAudioiClip.name) == true)
                 continue;
 
-            m_ADClipList.Add(a_GAudioiClip.name, a_GAudioiClip);    //m_ADClipList¿¡ ÆÄÀÏÀÌ¸§, °´Ã¼ ÀúÀå
+            m_ADClipList.Add(a_GAudioiClip.name, a_GAudioiClip); 
         }
-        // --- »ç¿îµå ¹Ì¸® ·Îµù
     }
 
-    // Update is called once per frame
-    void Update()
+    public void LoadChildGameObj()  //ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½
     {
+        m_AudioSrc = this.gameObject.AddComponent<AudioSource>();   //ï¿½ï¿½Å©ï¿½ï¿½Æ®ï¿½ï¿½ AudioSource ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ß°ï¿½
 
-    }
-
-    public void LoadChildGameObj()  //»ç¿îµå ·Îµù
-    {
-        m_AudioSrc = this.gameObject.AddComponent<AudioSource>();   //½ºÅ©¸³Æ®»ó AudioSource ÄÄÆ÷³ÍÆ® Ãß°¡
-
-        for (int ii = 0; ii < m_EffSdCount; ii++)    //20°³ »ý¼º
+        for (int ii = 0; ii < m_EffSdCount; ii++)    //20ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         {
-            GameObject newSoundObj = new GameObject("SoundEffObj");     //ºó °ÔÀÓ¿ÀºêÁ§Æ® »ý¼º
+            GameObject newSoundObj = new GameObject("SoundEffObj");     //ï¿½ï¿½ ï¿½ï¿½ï¿½Ó¿ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
             newSoundObj.transform.SetParent(this.transform);
             newSoundObj.transform.localPosition = Vector3.zero;
             AudioSource a_AudioSrc = newSoundObj.AddComponent<AudioSource>();
@@ -74,11 +64,11 @@ public class Sound_Mgr : G_Singleton<Sound_Mgr>
             a_AudioSrc.loop = false;
             AudioNode a_AudioNode = newSoundObj.AddComponent<AudioNode>();
             a_AudioNode.m_AudioSrc = a_AudioSrc;
-            m_AudNodeList.Add(a_AudioNode);     //¸®½ºÆ®·Î °ü¸®
+            m_AudNodeList.Add(a_AudioNode);     //ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
         } //for(int ii = 0; ii < m_EffSdCount; ii++)
 
-        // --- »ç¿îµå OnOff, »ç¿îµå º¼·ý ·ÎÄÃ ·Îµù ÈÄ Àû¿ë
+        // --- ï¿½ï¿½ï¿½ï¿½ OnOff, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         int a_SoundOnOff = PlayerPrefs.GetInt("SoundOnOff", 1);
         if (a_SoundOnOff == 1)
             SoundOnOff(true);
@@ -87,7 +77,7 @@ public class Sound_Mgr : G_Singleton<Sound_Mgr>
 
         float a_Value = PlayerPrefs.GetFloat("SoundVolume", 1.0f);
         SoundVolume(a_Value);
-        // --- »ç¿îµå OnOff, »ç¿îµå º¼·ý ·ÎÄÃ ·Îµù ÈÄ Àû¿ë
+        // --- ï¿½ï¿½ï¿½ï¿½ OnOff, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
     }
 
@@ -100,33 +90,33 @@ public class Sound_Mgr : G_Singleton<Sound_Mgr>
         }
         else
         {
-            a_GAudioClip = Resources.Load("Sounds/" + a_FileName) as AudioClip;     //Á¸ÀçÇÏÁö ¾ÊÀ¸¸é ´Ù½Ã ·Îµù
+            a_GAudioClip = Resources.Load("Sounds/" + a_FileName) as AudioClip; 
             m_ADClipList.Add(a_FileName, a_GAudioClip);
         }
 
         if (m_AudioSrc == null)
             return;
 
-        if (m_AudioSrc.clip != null && m_AudioSrc.clip.name == a_FileName) //ºñ¾îÀÖÁö ¾Ê°Å³ª °°Àº ÀÌ¸§ÀÇ ÆÄÀÏÀÌ Á¸ÀçÇÏ¸é ±×³É ³Ñ°Ü
+        if (m_AudioSrc.clip != null && m_AudioSrc.clip.name == a_FileName)
             return;
 
         m_AudioSrc.clip = a_GAudioClip;
         m_AudioSrc.volume = fVolume * m_SoundVolume;
         m_bgmVolume = fVolume;
-        m_AudioSrc.loop = true;     //¹«ÇÑ·çÇÁ
-        m_AudioSrc.Play();          //¿¬°áµÇ¾îÀÖ´Â ¿Àµð¿À ÇÏ³ª¸¸ ÇÃ·¹ÀÌ
+        m_AudioSrc.loop = true; 
+        m_AudioSrc.Play(); 
 
     } //public void PlayBGM(string a_FileName, float fVolume = 0.2f)
 
     public void PlayGUISound(string a_FileName, float fVolume = 0.2f)
-    {   //GUI È¿°úÀ½ ÇÃ·¹ÀÌ ÇÏ±â À§ÇÑ ÇÔ¼ö
+    {   
         if (m_SoundOnOff == false)
             return;
 
         AudioClip a_GAudioClip = null;
         if (m_ADClipList.ContainsKey(a_FileName) == true)
         {
-            a_GAudioClip = m_ADClipList[a_FileName] as AudioClip;
+            a_GAudioClip = m_ADClipList[a_FileName];
         }
         else
         {
@@ -137,9 +127,9 @@ public class Sound_Mgr : G_Singleton<Sound_Mgr>
         if (m_AudioSrc == null)
             return;
 
-        m_AudioSrc.PlayOneShot(a_GAudioClip, fVolume * m_SoundVolume);  //Áßº¹À½ ÇÃ·¹ÀÌ °¡´É
+        m_AudioSrc.PlayOneShot(a_GAudioClip, fVolume * m_SoundVolume); 
 
-    } //public void PlayGUISound(string a_FileName, float fVolume = 0.2f)
+    }
 
     public void PlayEffSound(string a_FileName, float fVolume = 0.2f)
     {
@@ -149,7 +139,7 @@ public class Sound_Mgr : G_Singleton<Sound_Mgr>
         AudioClip a_GAudioClip = null;
         if (m_ADClipList.ContainsKey(a_FileName) == true)
         {
-            a_GAudioClip = m_ADClipList[a_FileName] as AudioClip;
+            a_GAudioClip = m_ADClipList[a_FileName];
         }
         else
         {
@@ -168,27 +158,25 @@ public class Sound_Mgr : G_Singleton<Sound_Mgr>
             if (a_AudNode == null)
                 continue;
 
-            //ÀÌÀü »ç¿îµå¸¦ ¾ÆÁ÷ ÇÃ·¹ÀÌ ÁßÀÌ¸é ½ºÅµ
             if (0.0f < a_AudNode.m_PlayTime)
                 continue;
-            //ÇÃ·¹ÀÌ¸¦ ½¬°í ÀÖ´Â AudioSource¸¸ ÀçÈ°¿ë ÇÑ´Ù.
 
             a_AudSrc = a_AudNode.m_AudioSrc;
 
-            a_AudSrc.volume = fVolume * m_SoundVolume;  //m_SoundVolume º¯¼ö·Î °ÔÀÓÀÇ ÀüÃ¼ÀûÀÎ º¼·ý ¼³Á¤ °¡´É
+            a_AudSrc.volume = fVolume * m_SoundVolume; 
             a_AudSrc.clip = a_GAudioClip;
             a_AudNode.m_EffVolume = fVolume;
-            a_AudNode.m_PlayTime = a_GAudioClip.length + 0.7f;  // »ç¿îµå ÇÃ·¹ÀÌ ½Ã°£
+            a_AudNode.m_PlayTime = a_GAudioClip.length + 0.7f; 
             a_AudSrc.Play();
 
             isPlayOK = true;
             break;
 
-        } //foreach(AudioNode a_AudNode in m_AudNodeList)
+        }
 
-        if (isPlayOK == false)   // »ç¿îµå Ãß°¡ ÇÊ¿ä
+        if (isPlayOK == false) 
         {
-            GameObject newSoundObj = new GameObject("SoundEffObj");     //ºó °ÔÀÓ¿ÀºêÁ§Æ® »ý¼º
+            GameObject newSoundObj = new GameObject("SoundEffObj");
             newSoundObj.transform.SetParent(this.transform);
             newSoundObj.transform.localPosition = Vector3.zero;
             AudioSource a_AudioSrc = newSoundObj.AddComponent<AudioSource>();
@@ -196,28 +184,25 @@ public class Sound_Mgr : G_Singleton<Sound_Mgr>
             a_AudioSrc.loop = false;
             AudioNode a_AudioNode = newSoundObj.AddComponent<AudioNode>();
             a_AudioNode.m_AudioSrc = a_AudioSrc;
-            m_AudNodeList.Add(a_AudioNode);     //¸®½ºÆ®·Î °ü¸®
+            m_AudNodeList.Add(a_AudioNode);    
 
-            // --- »ç¿îµå ÇÃ·¹ÀÌ
-            a_AudioSrc.volume = fVolume * m_SoundVolume;  //m_SoundVolume º¯¼ö·Î °ÔÀÓÀÇ ÀüÃ¼ÀûÀÎ º¼·ý ¼³Á¤ °¡´É
+            a_AudioSrc.volume = fVolume * m_SoundVolume; 
             a_AudioSrc.clip = a_GAudioClip;
             a_AudioNode.m_EffVolume = fVolume;
-            a_AudioNode.m_PlayTime = a_GAudioClip.length + 0.7f;  // »ç¿îµå ÇÃ·¹ÀÌ ½Ã°£
+            a_AudioNode.m_PlayTime = a_GAudioClip.length + 0.7f; 
             a_AudioSrc.Play();
-
-        } //if(isPlayOK == false)   // »ç¿îµå Ãß°¡ ÇÊ¿ä
-
-    } //public void PlayEffSound(string a_FileName, float fVolume = 0.2f)
+        } 
+    } 
 
     public void SoundOnOff(bool a_OnOff = true)
     {
-        bool a_MuteOnOff = !a_OnOff;    //¹ÝÀü½ÃÄÑ¼­ °¡Á®¿È
+        bool a_MuteOnOff = !a_OnOff;
 
         if (m_AudioSrc != null)
         {
-            m_AudioSrc.mute = a_MuteOnOff;  // mute == true ²ô±â, mute == false ÄÑ±â
-            if (a_MuteOnOff == false)   // »ç¿îµå¸¦ ´Ù½Ã Ä×À» ¶§
-                m_AudioSrc.time = 0;    // Ã³À½ºÎÅÍ ´Ù½Ã ÇÃ·¹ÀÌ
+            m_AudioSrc.mute = a_MuteOnOff;  
+            if (a_MuteOnOff == false)   
+                m_AudioSrc.time = 0;    
         }
 
         foreach (AudioNode a_AudNode in m_AudNodeList)
@@ -226,8 +211,8 @@ public class Sound_Mgr : G_Singleton<Sound_Mgr>
                 continue;
 
             a_AudNode.m_AudioSrc.mute = a_MuteOnOff;
-            if (a_MuteOnOff == false)   // »ç¿îµå¸¦ ´Ù½Ã Ä×À» ¶§
-                a_AudNode.m_AudioSrc.time = 0;    // Ã³À½ºÎÅÍ ´Ù½Ã ÇÃ·¹ÀÌ
+            if (a_MuteOnOff == false)  
+                a_AudNode.m_AudioSrc.time = 0;   
         }
 
         m_SoundOnOff = a_OnOff;
@@ -246,9 +231,7 @@ public class Sound_Mgr : G_Singleton<Sound_Mgr>
             a_AudNode.m_AudioSrc.volume = a_AudNode.m_EffVolume * fVolume;
         }
 
-        m_SoundVolume = fVolume;    //ÀüÃ¼ º¼·ý ÀúÀå
+        m_SoundVolume = fVolume; 
 
-    } //public void SoundVolume(float fVolume)
-
+    } 
 }
-
