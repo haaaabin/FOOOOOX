@@ -158,12 +158,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c26f85713c1b234dad0a350273c07fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_MonType: 4
-  Player: {fileID: 0}
-  MoveSpeed: 3
-  nextMove: 0
-  m_HpBarObj: {fileID: 0}
-  m_hpBarImg: {fileID: 0}
-  m_MonBullet: {fileID: 0}
-  m_shootPos: {fileID: 0}
-  Bulletspeed: 10
+  monType: 4
+  hpBarObj: {fileID: 0}
+  hpBarImg: {fileID: 0}
+  curHp: 100
+  turn: 1
+  plantMonBullet: {fileID: 0}
+  plantMonShootPos: {fileID: 0}
+  trunkMonBullet: {fileID: 0}
+  trunkMonShootPos: {fileID: 0}
+  bossHpBarObj: {fileID: 0}
+  bossHpBarImg: {fileID: 0}
+  bossBullet: {fileID: 0}
+  bossBulletSpeed: 15
+  bossShootPos: {fileID: 0}
+  bulletObj: {fileID: 0}

@@ -320,8 +320,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c8f804d36f0b454faf2741a325845e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_SkType: 0
-  m_SkCountText: {fileID: 0}
+  skType: 0
+  skCountText: {fileID: 0}
 --- !u!1 &362400823
 GameObject:
   m_ObjectHideFlags: 0
@@ -808,27 +808,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce12b1511dc94774aa33806e1910db77, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_SkType: 2
-  m_Damage_Canvas: {fileID: 469781837}
-  m_DamageRoot: {fileID: 1550618029450412704, guid: 33770d6c8f516c14485018e7df1bcdb5, type: 3}
-  m_StoreBtn: {fileID: 1569768368}
-  m_StoreBoxObj: {fileID: 797160474}
-  m_GoldText: {fileID: 1633877430}
-  m_CoinItem: {fileID: 4456373416328287422, guid: d5ba5eef2f6934a4fadf858b1c9aa23b, type: 3}
-  m_DiaItem: {fileID: 8133223092052540902, guid: dc2e7198045e7c745831001a8ba39330, type: 3}
-  m_ConfigBtn: {fileID: 362400825}
-  Canvas_Dialog: {fileID: 1166592184}
-  m_ConfigBoxObj: {fileID: 8644034441348681775, guid: c78ee0c7fb05a314e94cedc4fbd2e3e0, type: 3}
-  GameOverPanel: {fileID: 387089459}
-  m_ReplayBtn: {fileID: 852666341}
-  m_GameExitBtn: {fileID: 2146755657}
-  m_titleTxt: {fileID: 989681652}
-  m_SkCoolPrefab: {fileID: 3612345478279076019, guid: 1dab20ec0279334489aa01aa3bc3e0b5, type: 3}
-  m_SkCoolRoot: {fileID: 1057978519}
-  m_SkInvenNode:
+  skillType: 2
+  damageCanvas: {fileID: 469781837}
+  damageRoot: {fileID: 1550618029450412704, guid: 33770d6c8f516c14485018e7df1bcdb5, type: 3}
+  storeBtn: {fileID: 1569768368}
+  storeBoxObj: {fileID: 3108239251532186166, guid: 9d0d025de4bdbe045a9b3fdb986cabee, type: 3}
+  goldText: {fileID: 1633877430}
+  coin: {fileID: 4456373416328287422, guid: d5ba5eef2f6934a4fadf858b1c9aa23b, type: 3}
+  diamond: {fileID: 8133223092052540902, guid: dc2e7198045e7c745831001a8ba39330, type: 3}
+  configBtn: {fileID: 362400825}
+  canvasDialog: {fileID: 8644034441348681775, guid: c78ee0c7fb05a314e94cedc4fbd2e3e0, type: 3}
+  configBoxObj: {fileID: 0}
+  gameOverPanel: {fileID: 387089459}
+  replayBtn: {fileID: 852666341}
+  gameExitBtn: {fileID: 2146755657}
+  titleText: {fileID: 989681652}
+  skCoolPrefab: {fileID: 3612345478279076019, guid: 1dab20ec0279334489aa01aa3bc3e0b5, type: 3}
+  skCoolRoot: {fileID: 1057978519}
+  skInvenNode:
   - {fileID: 264722687}
   - {fileID: 1886879245}
-  m_HpBarImg: {fileID: 1541303677}
+  hpBarImg: {fileID: 1541303677}
 --- !u!4 &722476370
 Transform:
   m_ObjectHideFlags: 0
@@ -2614,8 +2614,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c8f804d36f0b454faf2741a325845e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_SkType: 0
-  m_SkCountText: {fileID: 0}
+  skType: 0
+  skCountText: {fileID: 0}
 --- !u!1 &1907245427
 GameObject:
   m_ObjectHideFlags: 0
@@ -2752,9 +2752,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 1068993825}
-  speed: 3
   minCameraBoundary: {x: -0.3, y: -25}
   maxCameraBoundary: {x: 315, y: 0.7}
+  speed: 3
 --- !u!1 &2115140885
 GameObject:
   m_ObjectHideFlags: 0

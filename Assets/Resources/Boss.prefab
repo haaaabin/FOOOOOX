@@ -159,23 +159,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c26f85713c1b234dad0a350273c07fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_MonType: 5
-  MoveSpeed: 3
-  m_HpBarObj: {fileID: 0}
-  m_hpBarImg: {fileID: 0}
-  m_CurHp: 100
+  monType: 5
+  hpBarObj: {fileID: 0}
+  hpBarImg: {fileID: 0}
+  curHp: 100
   turn: 1
-  m_MonBullet: {fileID: 0}
-  m_shootPos: {fileID: 0}
-  Bulletspeed: 10
-  m_TMonBullet: {fileID: 0}
-  m_TshootPos: {fileID: 0}
-  m_bosshpBarObj: {fileID: 0}
-  m_bosshpBarImg: {fileID: 0}
-  m_bossBullet: {fileID: 4776504973887125669, guid: a8eb257d80ae3724dbdad6d8dabe0738, type: 3}
-  Boss_Bulletspeed: 15
-  m_BShootPos: {fileID: 7259004894430475052}
-  ballPrefab: {fileID: 6311710483751677310, guid: d794f20753bebc24c8dc8cac73c2526a, type: 3}
+  plantMonBullet: {fileID: 0}
+  plantMonShootPos: {fileID: 0}
+  trunkMonBullet: {fileID: 0}
+  trunkMonShootPos: {fileID: 0}
+  bossHpBarObj: {fileID: 0}
+  bossHpBarImg: {fileID: 0}
+  bossBullet: {fileID: 4776504973887125669, guid: a8eb257d80ae3724dbdad6d8dabe0738, type: 3}
+  bossBulletSpeed: 15
+  bossShootPos: {fileID: 7259004894430475052}
+  bulletObj: {fileID: 6311710483751677310, guid: d794f20753bebc24c8dc8cac73c2526a, type: 3}
 --- !u!1 &7259004894430475052
 GameObject:
   m_ObjectHideFlags: 0
