@@ -2129,11 +2129,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af0d736a0bb7bcf4d9e16feceeda7db3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_StartGameBtn: {fileID: 1230710423}
-  m_GameDescriptionBtn: {fileID: 860690758}
-  m_GameEndBtn: {fileID: 420509160}
-  m_DescriptionPanel: {fileID: 1226859283}
-  m_ExitBtn: {fileID: 608431298}
+  startGameBtn: {fileID: 1230710423}
+  gameDescriptionBtn: {fileID: 860690758}
+  gameEndBtn: {fileID: 420509160}
+  descriptionPanel: {fileID: 1226859283}
+  exitBtn: {fileID: 608431298}
 --- !u!4 &414476573
 Transform:
   m_ObjectHideFlags: 0
