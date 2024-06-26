@@ -1,83 +1,66 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class MonsterGenerator : MonoBehaviour
 {
     [Header("---- Monster Spawn ----")]
-    //���Ͱ� ������ ��ġ�� ���� �迭
-    [HideInInspector] public Transform[] MR_points;
-    [HideInInspector] public Transform[] S_points;
-    [HideInInspector] public Transform[] P_points;
-    [HideInInspector] public Transform[] M_points;
-    [HideInInspector] public Transform[] m_points;
-    [HideInInspector] public Transform[] T_points;
+    [HideInInspector] public Transform[] mushroomPoints;
+    [HideInInspector] public Transform[] snailPoints;
+    [HideInInspector] public Transform[] plantPoints;
+    [HideInInspector] public Transform[] rockPoints;
+    [HideInInspector] public Transform[] miniRockPoints;
+    [HideInInspector] public Transform[] trunkPoints;
 
-    //���� �������� �Ҵ��� ����
     public GameObject[] monsterPrefab;
-    public Transform mon_Root = null;
+    public Transform monsterRoot = null;
+    private Transform[][] spawnPoints;  // 모든 스폰 포인트를 저장할 배열
 
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        //--- Monster Spawn
-        MR_points = GameObject.Find("MushRoomSpawnPos").GetComponentsInChildren<Transform>();
-        S_points = GameObject.Find("SnailSpawnPos").GetComponentsInChildren<Transform>();
-        P_points = GameObject.Find("PlantSpawnPos").GetComponentsInChildren<Transform>();
-        M_points = GameObject.Find("RockSpawnPos").GetComponentsInChildren<Transform>();
-        m_points = GameObject.Find("MiniRockSpawnPos").GetComponentsInChildren<Transform>();
-        T_points = GameObject.Find("TrunkSpawnPos").GetComponentsInChildren<Transform>();
+        // 각 스폰  포인트 그룹을 찾아서 배열에 저장
+        mushroomPoints = GameObject.Find("MushRoomSpawnPos").GetComponentsInChildren<Transform>();
+        snailPoints = GameObject.Find("SnailSpawnPos").GetComponentsInChildren<Transform>();
+        plantPoints = GameObject.Find("PlantSpawnPos").GetComponentsInChildren<Transform>();
+        rockPoints = GameObject.Find("RockSpawnPos").GetComponentsInChildren<Transform>();
+        miniRockPoints = GameObject.Find("MiniRockSpawnPos").GetComponentsInChildren<Transform>();
+        trunkPoints = GameObject.Find("TrunkSpawnPos").GetComponentsInChildren<Transform>();
 
-        if (MR_points.Length > 0 || S_points.Length > 0 || P_points.Length > 0 || M_points.Length > 0
-            || m_points.Length > 0 || T_points.Length > 0)
+        // 스폰 포인트들을 배열로 저장
+        spawnPoints = new Transform[][] { mushroomPoints, snailPoints, plantPoints, rockPoints, miniRockPoints, trunkPoints };
+
+        // 스폰 포인트가 있는지 확인하고, 있다면 몬스터 생성 코루틴 시작
+        if (AnyPointsAvailable())
         {
-            StartCoroutine(this.CreateMonster());
+            StartCoroutine(CreateMonster());
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    // 스폰 포인트가 있는지 확인
+    private bool AnyPointsAvailable()
     {
-        
+        foreach (var points in spawnPoints)
+        {
+            if (points != null && points.Length > 0)
+                return true;
+        }
+        return false;
     }
-    IEnumerator CreateMonster()
+
+    // 몬스터 생성 코루틴
+    private IEnumerator CreateMonster()
     {
-        for (int i = 1; i < MR_points.Length; i++)
+        for (int i = 0; i < spawnPoints.Length; i++)
         {
-            GameObject mon = Instantiate(monsterPrefab[0]) as GameObject;
-            mon.transform.SetParent(mon_Root);
-            mon.transform.position = MR_points[i].position;
+            Transform[] points = spawnPoints[i];
+            if (points == null || points.Length <= 1) continue; // 유효한 스폰 포인트가 없으면 건너뜀
+
+            for (int j = 1; j < points.Length; j++)
+            {
+                GameObject monster = Instantiate(monsterPrefab[i]);
+                monster.transform.SetParent(monsterRoot);
+                monster.transform.position = points[j].position;
+                yield return null;
+            }
         }
-        for (int i = 1; i < S_points.Length; i++)
-        {
-            GameObject mon = Instantiate(monsterPrefab[1]) as GameObject;
-            mon.transform.SetParent(mon_Root);
-            mon.transform.position = S_points[i].position;
-        }
-        for (int i = 1; i < P_points.Length; i++)
-        {
-            GameObject mon = Instantiate(monsterPrefab[2]) as GameObject;
-            mon.transform.SetParent(mon_Root);
-            mon.transform.position = P_points[i].position;
-        }
-        for (int i = 1; i < M_points.Length; i++)
-        {
-            GameObject mon = Instantiate(monsterPrefab[3]) as GameObject;
-            mon.transform.SetParent(mon_Root);
-            mon.transform.position = M_points[i].position;
-        }
-        for (int i = 1; i < m_points.Length; i++)
-        {
-            GameObject mon = Instantiate(monsterPrefab[4]) as GameObject;
-            mon.transform.SetParent(mon_Root);
-            mon.transform.position = m_points[i].position;
-        }
-        for (int i = 1; i < T_points.Length; i++)
-        {
-            GameObject mon = Instantiate(monsterPrefab[5]) as GameObject;
-            mon.transform.SetParent(mon_Root);
-            mon.transform.position = T_points[i].position;
-        }
-        yield return null;
     }
 }
