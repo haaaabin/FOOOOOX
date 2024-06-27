@@ -107,22 +107,21 @@ public class PlayerCtrl : MonoBehaviour
 
     private void UpdateAnimState()
     {
-        //좌우 이동
-        if (dirX != 0)
+        if (dirX != 0)  // walk
         {
             anim.SetInteger("state", 1);
             transform.localScale = new Vector3(Mathf.Sign(dirX), 1, 1);
         }
-        else
+        else // idle
         {
             anim.SetInteger("state", 0);
         }
 
-        if (rigid.velocity.y > 0.1f)
+        if (rigid.velocity.y > 0.1f)    // jump
         {
             anim.SetInteger("state", 2);
         }
-        else if (rigid.velocity.y < -0.1f)
+        else if (rigid.velocity.y < -0.1f)  // land
         {
             anim.SetInteger("state", 3);
         }
@@ -217,7 +216,7 @@ public class PlayerCtrl : MonoBehaviour
         MonsterController mon = enemy.GetComponent<MonsterController>();
         mon.MonsterTakeDamage();
     }
-    
+
     private void PlayerTakeDemage(float damage, Vector2 position)
     {
         if (shieldOnTime > 0)  //쉴드 스킬 발동 중일 때.. 데미지 스킬
