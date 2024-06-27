@@ -307,7 +307,7 @@ public class MonsterController : MonoBehaviour
             else
             {
                 Destroy(coll.gameObject);
-                TakeDemaged();
+                MonsterTakeDamage();
             }
             if (monType == MonType.Boss)
             {
@@ -325,7 +325,7 @@ public class MonsterController : MonoBehaviour
         }
     }
 
-    public void TakeDemaged(float value = 50)
+    public void MonsterTakeDamage(float value = 50)
     {
         anim.SetTrigger("Hit");
 
@@ -352,7 +352,7 @@ public class MonsterController : MonoBehaviour
             {
                 anim.SetTrigger("ShellHit");
                 curHp = 0.0f;
-                GameMgr.instance.SpawnCoin(transform.position);
+                GameMgr.Instance.SpawnCoin(transform.position);
                 MonsterDie();
             }
         }
@@ -362,7 +362,7 @@ public class MonsterController : MonoBehaviour
             {
                 curHp = 0.0f;
                 if (hpBarObj != null) hpBarObj.SetActive(false);
-                GameMgr.instance.SpawnCoin(transform.position);
+                GameMgr.Instance.SpawnCoin(transform.position);
                 MonsterDie();
             }
         }
@@ -382,7 +382,7 @@ public class MonsterController : MonoBehaviour
             curHp = 0.0f;
             if (bossHpBarObj != null) bossHpBarObj.SetActive(false);
             MonsterDie();
-            GameMgr.instance.SpawnDiamond(transform.position);
+            GameMgr.Instance.SpawnDiamond(transform.position);
         }
     }
 
