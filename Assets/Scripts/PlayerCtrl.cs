@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -15,42 +13,34 @@ public enum MovementState
 public class PlayerCtrl : MonoBehaviour
 {
     public static MovementState state = MovementState.idle;
-
-    private float dirX = 0.0f;
-    public float moveSpeed = 5.0f;
-    public float jumpPower = 7.0f;
-
     private Rigidbody2D rigid;
     private Animator anim;
     private CapsuleCollider2D playerColl;
     private SpriteRenderer sprite;
+    private float dirX = 0.0f;
+    private float moveSpeed = 5.0f;
+    private float jumpPower = 7.0f;
+    public GameObject bullet;
+    public GameObject shootPos;
+    private float bulletSpeed = 10.0f;
 
-    //--- �Ѿ� ���� ---
-    public GameObject m_BulletObj = null;
-    public GameObject m_shootPos = null;
-    float BulletSpeed = 10.0f;
-
-    public Image m_HpBarImg = null;
+    public Image hpBarImg;
     public static float initHp = 500.0f;
     public static float hp = 500.0f;
 
     LayerMask playerState;
 
-    LayerMask groundMask = -1;
+    private LayerMask groundMask = -1;
     LayerMask shieldMask = -1;
 
-    bool isDie = false;
+    private bool isDie = false;
 
     //-- 쉴드
-    float m_SdOnTime = 0.0f;
-    float m_SdDuration = 10.0f; //15초 동안 발동
-    public GameObject ShieldObj = null;
+    private float shieldOnTime = 0.0f;
+    private float shieldDuration = 10.0f; //15초 동안 발동
+    public GameObject shieldObj = null;
 
-    float m_ShootTime = 0.0f;
-    float m_ShootDelay = 0.5f;
-
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         GlobalValue.LoadGameData();
         Time.timeScale = 1;
@@ -59,78 +49,69 @@ public class PlayerCtrl : MonoBehaviour
         anim = GetComponent<Animator>();
         playerColl = GetComponent<CapsuleCollider2D>();
         sprite = GetComponent<SpriteRenderer>();
-
+        // groundMask = 1 << LayerMask.NameToLayer("Platform") | 1 << LayerMask.NameToLayer("AirPlatform");
+        groundMask = LayerMask.GetMask("Platform", "AirPlatform");
         isDie = false;
-
-        groundMask = 1 << LayerMask.NameToLayer("Platform") | 1 << LayerMask.NameToLayer("AirPlatform");
-
     }
 
-    // Update is called once per frame
-
-    void Update()
+    private void Update()
     {
-        if (!isDie)
-        {
-            //이동
-            dirX = Input.GetAxis("Horizontal");
-            transform.Translate(dirX * Time.deltaTime * moveSpeed, 0, 0);
+        if (isDie)
+            return;
 
-            //점프
-            if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
-            {
-                rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
-            }
-
-            //공격
-            if (Input.GetKeyDown(KeyCode.Z))
-            {
-                if (m_BulletObj == null)
-                    return;
-
-                GameObject a_BullObj = Instantiate(m_BulletObj) as GameObject;
-                BulletCtrl a_Bullet = a_BullObj.GetComponent<BulletCtrl>();
-                a_Bullet.BulletSpawn(m_shootPos.transform.position, Vector3.right, BulletSpeed);
-
-                if (transform.localScale.x == -1)
-                {
-                    a_Bullet.BulletSpawn(m_shootPos.transform.position, Vector3.left, BulletSpeed);
-                }
-
-                Sound_Mgr.Instance.PlayGUISound("gun", 1.0f);
-            }
-
-            UpdateAnimState();
-
-            LimitMove();
-
-            SkillUpdate();
-        }
-
+        HandleInput();
+        UpdateAnimState();
+        LimitMove();
+        SkillUpdate();
     }
 
-    void LimitMove()
+    private void HandleInput()
+    {
+        dirX = Input.GetAxis("Horizontal");
+        transform.Translate(dirX * Time.deltaTime * moveSpeed, 0, 0);
+
+        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
+        {
+            rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
+        }
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            ShootBullet();
+        }
+    }
+
+    private void ShootBullet()
+    {
+        if (bullet != null)
+        {
+            GameObject bulletObject = Instantiate(bullet, shootPos.transform.position, Quaternion.identity);
+            BulletController bulletCtrl = bulletObject.GetComponent<BulletController>();
+            Vector3 direction = transform.localScale.x == 1 ? Vector3.right : Vector3.left;
+            bulletCtrl.InitializeBullet(shootPos.transform.position, direction, bulletSpeed);
+            SoundManager.Instance.PlayGUISound("gun", 1.0f);
+        }
+    }
+
+    private void LimitMove()
     {
         if (transform.position.x <= -10.5f)
+        {
             transform.position = new Vector2(-10.5f, transform.position.y);
+        }
     }
-    bool IsGrounded()
+
+    private bool IsGrounded()
     {
         return Physics2D.BoxCast(playerColl.bounds.center, playerColl.bounds.size, 0f, Vector2.down, 0.5f, groundMask);
     }
 
-    void UpdateAnimState()
+    private void UpdateAnimState()
     {
         //좌우 이동
-        if (dirX > 0)   
+        if (dirX != 0)
         {
             anim.SetInteger("state", 1);
-            transform.localScale = new Vector3(1, 1, 1);
-        }
-        else if (dirX < 0)  
-        {
-            anim.SetInteger("state", 1);
-            transform.localScale = new Vector3(-1, 1, 1);
+            transform.localScale = new Vector3(Mathf.Sign(dirX), 1, 1);
         }
         else
         {
@@ -147,236 +128,216 @@ public class PlayerCtrl : MonoBehaviour
         }
     }
 
-    void OnCollisionEnter2D(Collision2D coll)
+    private void OnCollisionEnter2D(Collision2D coll)
     {
-        if (coll.gameObject.tag == "Monster")
+        switch (coll.gameObject.tag)
         {
-            PlayerTakeDemaged(20);
-            OnDamaged(coll.transform.position);
-
-        }
-        if(coll.gameObject.tag == "Snail")
-        {
-            //떨어지는 중이고 snail보다 위에 있을 때 -> 밟을 때
-            if (rigid.velocity.y < 0 && transform.position.y > coll.transform.position.y)
-            {
-                OnAttack(coll.transform);
-            }
-            else
-            {
-                PlayerTakeDemaged(20);
-                OnDamaged(coll.transform.position);
-            }        
-        }
-
-        if(coll.gameObject.tag == "M_Bullet")   
-        {
-            Destroy(coll.gameObject);
-            PlayerTakeDemaged(20);
-            OnDamaged();
-            Sound_Mgr.Instance.PlayGUISound("Hit", 1.0f);
+            case "Monster":
+                PlayerTakeDemage(20, coll.transform.position);
+                break;
+            case "Snail":
+                // 떨어지는 중이고 snail보다 위에 있을 때 -> 밟을 때
+                if (rigid.velocity.y < 0 && transform.position.y > coll.transform.position.y)
+                {
+                    OnAttack(coll.transform);
+                }
+                else
+                {
+                    PlayerTakeDemage(20, coll.transform.position);
+                }
+                break;
+            case "M_Bullet":
+                Destroy(coll.gameObject);
+                PlayerTakeDemage(20, coll.transform.position);
+                SoundManager.Instance.PlayGUISound("Hit", 1.0f);
+                break;
+            case "Boss":
+                PlayerTakeDemage(50, coll.transform.position);
+                break;
         }
 
-        if(coll.gameObject.layer == LayerMask.NameToLayer("Trap"))
+        if (coll.gameObject.layer == LayerMask.NameToLayer("Trap"))
         {
-            PlayerTakeDemaged(20);
-            OnDamaged(coll.transform.position);
+            PlayerTakeDemage(20, coll.transform.position);
         }
 
-        if (coll.gameObject.tag == "Boss")
+        if (coll.gameObject.layer == LayerMask.NameToLayer("Ball"))
         {
-            PlayerTakeDemaged(50);
-            OnDamaged(coll.transform.position);
+            PlayerTakeDemage(20, coll.transform.position);
         }
 
-        if(coll.gameObject.layer == LayerMask.NameToLayer("Ball"))
+        if (coll.gameObject.name.Contains("DieZone"))
         {
-            PlayerTakeDemaged(20);
-            OnDamaged(coll.transform.position);
+            Die();
         }
-
-        if(coll.gameObject.name.Contains("DieZone"))
-        {
-            PlayerDie();
-        }
-
     }
 
-    void OnAttack(Transform enemy)
+    private void OnTriggerEnter2D(Collider2D coll)
     {
-        rigid.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
-        MonsterCtrl mon = enemy.GetComponent<MonsterCtrl>();
-        mon.TakeDemaged();     
-    }
-
-    void OnTriggerEnter2D(Collider2D coll)
-    {
-        if(coll.gameObject.name.Contains("Coin"))
+        if (coll.gameObject.name.Contains("Coin"))
         {
-            GameMgr.Inst.AddGold();
+            GameMgr.Instance.AddGold();
             Destroy(coll.gameObject);
-
-            Sound_Mgr.Instance.PlayGUISound("coin", 1.0f);
+            SoundManager.Instance.PlayGUISound("coin", 1.0f);
         }
-        else if(coll.gameObject.CompareTag("Door"))
+        else if (coll.gameObject.CompareTag("Door"))
         {
-            GameMgr.m_gameState = GameState.Boss;
-
+            GameMgr.gameState = GameState.Boss;
             PlayerPrefs.SetFloat("Hp", GlobalValue.g_Hp);
-
             SceneManager.LoadScene("BossScene");
             SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
         }
 
-        else if(coll.gameObject.name.Contains("Wall"))
+        else if (coll.gameObject.name.Contains("Wall"))
         {
             coll.isTrigger = true;
         }
 
-        else if(coll.gameObject.name.Contains("Dia"))
+        else if (coll.gameObject.name.Contains("Dia"))
         {
-            GameMgr.m_gameState = GameState.Ending;
+            GameMgr.gameState = GameState.Ending;
 
             Destroy(coll.gameObject);
-            Sound_Mgr.Instance.PlayGUISound("coin", 1.0f);
-            GameMgr.Inst.GameEnding();
+            SoundManager.Instance.PlayGUISound("coin", 1.0f);
+            GameMgr.Instance.GameEnding();
         }
-
     }
 
-    void OnTriggerExit2D(Collider2D coll)
+    private void OnTriggerExit2D(Collider2D coll)
     {
         if (coll.gameObject.name.Contains("Wall"))
-        { 
+        {
             coll.isTrigger = false;
         }
     }
 
-    void PlayerTakeDemaged(float a_Value)
+    private void OnAttack(Transform enemy)
     {
-        if (0.0f < m_SdOnTime)  //쉴드 스킬 발동 중일 때.. 데미지 스킬
+        rigid.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
+        MonsterController mon = enemy.GetComponent<MonsterController>();
+        mon.MonsterTakeDamage();
+    }
+    
+    private void PlayerTakeDemage(float damage, Vector2 position)
+    {
+        if (shieldOnTime > 0)  //쉴드 스킬 발동 중일 때.. 데미지 스킬
             return;
 
-        GameMgr.Inst.DamageText(-a_Value, transform.position, Color.blue);
+        GameMgr.Instance.DamageText(-damage, transform.position, Color.blue);
+        hp -= damage;
+        GlobalValue.g_Hp -= damage;
+        PlayerPrefs.SetFloat("Hp", GlobalValue.g_Hp);
 
-        hp -= a_Value;
-        GlobalValue.g_Hp -= a_Value;
+        if (hpBarImg != null)
+        {
+            hpBarImg.fillAmount = hp / initHp;
+        }
 
-        PlayerPrefs.SetFloat("Hp", GlobalValue.g_Hp); 
-
-        if (m_HpBarImg != null)
-            m_HpBarImg.fillAmount = hp / initHp;
-  
-        if (hp <=0)
+        if (hp <= 0)
         {
             hp = 0;
-            PlayerDie();
+            Die();
         }
 
-        Sound_Mgr.Instance.PlayGUISound("Hit", 1.0f);
+        SoundManager.Instance.PlayGUISound("Hit", 1.0f);
+        OnDamaged(position);
     }
 
-    public void UseSkill_Item(SkillType a_SkType)
+    private void Die()
     {
-        if(a_SkType == SkillType.Skill_0)
-        {
-            hp += (int)(initHp * 0.3f);
-            GameMgr.Inst.DamageText(initHp * 0.3f, transform.position, new Color(0.18f, 0.5f, 0.34f));
-
-            GlobalValue.g_Hp += hp;
-
-            PlayerPrefs.SetFloat("Hp", GlobalValue.g_Hp);
-            
-            if (initHp < hp)
-                hp = initHp;
-
-            if (m_HpBarImg != null)
-                m_HpBarImg.fillAmount = hp / initHp;
-        }
-
-        else if(a_SkType == SkillType.Skill_1)
-        {
-            if (0.0f < m_SdOnTime)
-                return;
-
-            m_SdOnTime = m_SdDuration;
-
-            GameMgr.Inst.SkillTimeMethod(m_SdOnTime, m_SdDuration);
-        
-        }
-
-        int a_SkIdx = (int)a_SkType;    //SkillType 인덱스로 변환
-        GlobalValue.g_SkillCount[a_SkIdx]--;    //스킬카운트 차감
-        string a_Skill = "SkItem_" + (a_SkIdx).ToString();
-        PlayerPrefs.SetInt(a_Skill, GlobalValue.g_SkillCount[a_SkIdx]);
+        isDie = true;
+        anim.SetTrigger("Die");
+        GameMgr.Instance.GameOver();
+        SoundManager.Instance.m_AudioSrc.clip = null;  //배경음 플레이 안함
     }
 
-    void SkillUpdate()
+    public void UseSkill_Item(SkillType skillType)
+    {
+        switch (skillType)
+        {
+            case SkillType.Skill_0:
+                Heal(initHp * 0.3f);
+                break;
+            case SkillType.Skill_1:
+                ActivateShield();
+                break;
+        }
+
+        int skillIndex = (int)skillType;    //SkillType 인덱스로 변환
+        GlobalValue.g_skillCount[skillIndex]--;    //스킬카운트 차감
+        PlayerPrefs.SetInt($"SkItem_{skillIndex}", GlobalValue.g_skillCount[skillIndex]);
+    }
+
+    private void Heal(float amount)
+    {
+        hp += amount;
+
+        GameMgr.Instance.DamageText(amount, transform.position, new Color(0.18f, 0.5f, 0.34f));
+        GlobalValue.g_Hp += hp;
+        PlayerPrefs.SetFloat("Hp", GlobalValue.g_Hp);
+
+        if (hp > initHp)
+            hp = initHp;
+
+        if (hpBarImg != null)
+            hpBarImg.fillAmount = hp / initHp;
+    }
+
+    private void ActivateShield()
+    {
+        if (shieldOnTime > 0)
+            return;
+
+        shieldOnTime = shieldDuration;
+        GameMgr.Instance.SkillTimeMethod(shieldOnTime, shieldDuration);
+    }
+
+    private void SkillUpdate()
     {
         //쉴드 상태 업데이트
-        if(0.0f < m_SdOnTime)
+        if (0.0f < shieldOnTime)
         {
-            m_SdOnTime -= Time.deltaTime;
-            if (ShieldObj != null && ShieldObj.activeSelf == false)
-                ShieldObj.SetActive(true);
+            shieldOnTime -= Time.deltaTime;
+            if (shieldObj != null && shieldObj.activeSelf == false)
+            {
+                shieldObj.SetActive(true);
+            }
 
-            Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"),
-                    LayerMask.NameToLayer("Monster"), true);
-            Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"),
-                   LayerMask.NameToLayer("Trap"), true);
-            Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"),
-                   LayerMask.NameToLayer("Boss"), true);
+            SetLayerCollisions(true);
         }
         else
         {
-            if (ShieldObj != null && ShieldObj.activeSelf == true)
-                ShieldObj.SetActive(false);
+            if (shieldObj != null && shieldObj.activeSelf == true)
+            {
+                shieldObj.SetActive(false);
+            }
 
-            Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"),
-                   LayerMask.NameToLayer("Monster"), false);
-            Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"),
-                   LayerMask.NameToLayer("Trap"), false);
-            Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"),
-                   LayerMask.NameToLayer("Boss"), false);
+            SetLayerCollisions(false);
         }
-    }  
-        
+    }
 
-    void OnDamaged(Vector2 targetPos)
+    private void SetLayerCollisions(bool ignore)
     {
-        if (0.0f < m_SdOnTime)  //쉴드 스킬 발동 중일 때.. 데미지 스킬
-            return;
+        Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Monster"), ignore);
+        Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Trap"), ignore);
+        Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Boss"), ignore);
+    }
 
+    private void OnDamaged(Vector2 targetPos)
+    {
         gameObject.layer = 10;
         sprite.color = new Color(1, 1, 1, 0.4f);
 
-        int dirc = transform.position.x - targetPos.x > 0 ? 1 : -1;
-        rigid.AddForce(new Vector2(dirc, 0.5f) * 5, ForceMode2D.Impulse);
+        int direction = transform.position.x - targetPos.x > 0 ? 1 : -1;
+        rigid.AddForce(new Vector2(direction, 0.5f) * 5, ForceMode2D.Impulse);
         Invoke("OffDamaged", 1);
     }
 
-    void OnDamaged()
-    {
-        if (0.0f < m_SdOnTime)  //쉴드 스킬 발동 중일 때.. 데미지 스킬
-            return;
-
-        gameObject.layer = 10;
-        sprite.color = new Color(1, 1, 1, 0.4f);
-        Invoke("OffDamaged", 1);
-    }
-    void OffDamaged()
+    private void OffDamaged()
     {
         gameObject.layer = 6;
         sprite.color = new Color(1, 1, 1, 1);
     }
 
-    void PlayerDie()
-    {
-        isDie = true;      
-        anim.SetTrigger("Die");
-        GameMgr.Inst.GameOver();
 
-        Sound_Mgr.Instance.m_AudioSrc.clip = null;  //배경음 플레이 안함
-
-    }
 }
