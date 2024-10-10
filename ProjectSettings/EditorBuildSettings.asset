@@ -10,10 +10,10 @@ EditorBuildSettings:
     guid: 73360f5085ce0e345b9552ff6ff0be76
   - enabled: 1
     path: Assets/Scenes/GameUIScene.unity
-    guid: aa92b26d71d88294490ff85f53ef18c0
+    guid: 2e64cf8689d9b9947b37065d28c37240
   - enabled: 1
     path: Assets/Scenes/Level1.unity
-    guid: ddb2ee53ececd9f48a76706b007c5d9c
+    guid: f3085983b2a56f0418fba7745264a2ea
   - enabled: 1
     path: Assets/Scenes/BossScene.unity
     guid: bfa1972ec4f20404887359c12c685d5c

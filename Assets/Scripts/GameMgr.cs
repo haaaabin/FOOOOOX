@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -15,122 +12,85 @@ public enum GameState
 
 public class GameMgr : MonoBehaviour
 {
-    [HideInInspector] public SkillType m_SkType = SkillType.SkCount;
-    public static GameState m_gameState = GameState.Level1;
-    
-    PlayerCtrl m_Player = null;
+    [HideInInspector] public SkillType skillType = SkillType.SkCount;
+    public static GameState gameState = GameState.Level1;
 
-    //---- 캐릭터 머리 위에 데미지 띄우기용 변수 선언
-    GameObject m_DmgClone;  //Damage Text 복사본을 받을 변수
-    DmgTextCtrl m_DmgText;  //Damage Text 복사본에 있는 DmgText_Ctrl 컴포넌트를 받을 변수
-    Vector3 m_StCacPos;     //시작 위치를 계산해 주기 위한 변수
+    private DmgTextCtrl dmgText;
+    private Vector3 stCacPos;
     [Header("--- Damage Text ---")]
-    public Transform m_Damage_Canvas = null;    //Damage_Canvas
-    public GameObject m_DamageRoot = null;      //Damage프리팹
+    public Transform damageCanvas;
+    public GameObject damageRoot;
 
-    // ---- 상점 -----
-    [Header(" ---- Store ----- ")]
-    public Button m_StoreBtn = null;
-    public GameObject m_StoreBoxObj = null;
-    public Text m_GoldText = null;
+    public Text goldText;
 
     [Header(" ---- Coin, Dia ----- ")]
-    public GameObject m_CoinItem = null;
-    public GameObject m_DiaItem = null;
-    int m_CurGold = 0;
+    public GameObject coin;
+    public GameObject diamond;
+    int curGold = 0;
 
-    [Header("---- Config -----")]
-    public Button m_ConfigBtn = null;
-    public GameObject Canvas_Dialog = null;
-    [HideInInspector] public GameObject m_ConfigBoxObj = null;
+    [Header("---- Setting -----")]
+    public Button settingBtn;
+    public GameObject settingPanel;
+    public Button gameExitBtn;
+    public Toggle sound_Toggle;
+    public Slider sound_Slider;
+
+    [Header("---- Store -----")]
+    public Button storeBtn;
+    public GameObject storePanel;
+    public Text coinText;
 
 
     [Header("---- GameOver -----")]
-    public GameObject GameOverPanel = null;
-    public Button m_ReplayBtn = null;
-    public Button m_GameExitBtn = null;
-    public Text m_titleTxt = null;
+    public GameObject gameOverPanel;
+    public Button replayBtn;
+    // public Button gameExitBtn;
+    public Text titleText;
 
     [Header("---- Skill Cool Timer -----")]
-    public GameObject m_SkCoolPrefab = null;
-    public Transform m_SkCoolRoot = null;
-    public SkInvenNode[] m_SkInvenNode;     //Skill 인벤토리 연결 변수
+    public GameObject skCoolPrefab;
+    public Transform skCoolRoot;
+    public SkInvenNode[] skInvenNode;
 
-    public Image m_HpBarImg = null;
-    public static GameMgr Inst = null;
+    public Image hpBarImg;
+    public static GameMgr Instance;
 
-
-    void Awake()
+    private void Awake()
     {
-        Inst = this;
+        if (Instance != null)
+            Destroy(Instance);
+        Instance = this;
     }
 
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         GlobalValue.LoadGameData();
         Time.timeScale = 1.0f;
 
+        settingPanel.SetActive(false);
+        storePanel.SetActive(false);
+        gameOverPanel.SetActive(false);
+
         InitRefreshUI();
         RefreshSkill();
+        InitSoundUI();
 
-        if (m_StoreBtn != null)
-            m_StoreBtn.onClick.AddListener(()=>
-            {
-                if (m_StoreBoxObj != null)
-                    m_StoreBoxObj.SetActive(true);
-
-                m_StoreBoxObj.GetComponent<StoreBox>();
-
-                Time.timeScale = 0.0f;
-            });
-
-        if (m_ConfigBtn != null)
-            m_ConfigBtn.onClick.AddListener(() =>
-            {
-                if (m_ConfigBoxObj == null)
-                    m_ConfigBoxObj = Resources.Load("ConfigBox") as GameObject;
-
-                GameObject a_CfgObj = Instantiate(m_ConfigBoxObj) as GameObject;
-                a_CfgObj.transform.SetParent(Canvas_Dialog.transform, false);
-                a_CfgObj.GetComponent<ConfigBox>();
-
-                Time.timeScale = 0.0f;
-            });
-
-        if (m_GameExitBtn != null)
-            m_GameExitBtn.onClick.AddListener(() =>
-            {
-                PlayerPrefs.DeleteAll();
-                SceneManager.LoadScene("TitleScene");
-            });
-
-        if (m_ReplayBtn != null)
-            m_ReplayBtn.onClick.AddListener(() =>
-            {
-                SceneManager.LoadScene("Level1");
-                SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
-            });
-
-        m_Player = GameObject.FindObjectOfType<PlayerCtrl>();
-
-        if(SceneManager.GetActiveScene().name == "Level1")
+        if (SceneManager.GetActiveScene().name == "Level1")
         {
-            Sound_Mgr.Instance.PlayBGM("hurry_up_and_run", 1.0f);
+            SoundManager.Instance.PlayBGM("hurry_up_and_run", 1.0f);
 
         }
-        else if(SceneManager.GetActiveScene().name == "BossScene")
+        else if (SceneManager.GetActiveScene().name == "BossScene")
         {
-            Sound_Mgr.Instance.PlayBGM("Maniac", 1.0f);
+            SoundManager.Instance.PlayBGM("Maniac", 1.0f);
         }
     }
-    
-    // Update is called once per frame
-    void Update()
+
+
+    private void Update()
     {
-        if(!(m_gameState == GameState.GameOver))
+        if (!(gameState == GameState.GameOver))
         {
-            //--단축키 이용으로 스킬 사용
             if (Input.GetKeyDown(KeyCode.Alpha1) ||
                 Input.GetKeyDown(KeyCode.Keypad1))
             {
@@ -144,153 +104,207 @@ public class GameMgr : MonoBehaviour
         }
     }
 
-    public void UseSkill_Key(SkillType a_SkType)
+    private void InitRefreshUI()
     {
-        if (GlobalValue.g_SkillCount[(int)a_SkType] <= 0)
+        if (GlobalValue.g_UserGold <= 0)
+            GlobalValue.g_UserGold = 0;
+
+        if (goldText != null)
+            goldText.text = GlobalValue.g_UserGold.ToString();
+
+        if (hpBarImg != null)
+            hpBarImg.fillAmount = PlayerCtrl.hp / PlayerCtrl.initHp;
+
+        for (int i = 0; i < StoreBox.skill.Length; i++)
+        {
+            if (skInvenNode.Length <= i)
+                return;
+
+            skInvenNode[i].skType = (SkillType)i;
+            skInvenNode[i].skCountText.text = StoreBox.skill[i].ToString();
+        }
+    }
+
+    private void InitSoundUI()
+    {
+        if (sound_Toggle != null)
+        {
+            sound_Toggle.onValueChanged.AddListener(SoundToggleOnOff);
+            int soundOnOff = PlayerPrefs.GetInt("SoundOnOff", 1);
+            sound_Toggle.isOn = (soundOnOff == 1);
+        }
+        if (sound_Slider != null)
+        {
+            sound_Slider.onValueChanged.AddListener(SoundSliderChange);
+            sound_Slider.value = PlayerPrefs.GetFloat("SoundVolume", 1);
+        }
+    }
+
+    private void SoundToggleOnOff(bool value)
+    {
+        if (value == true)
+            PlayerPrefs.SetInt("SoundOnOff", 1);
+        else
+            PlayerPrefs.SetInt("SoundOnOff", 0);
+
+        SoundManager.Instance.SoundOnOff(value);
+    }
+
+    private void SoundSliderChange(float value)
+    {
+        PlayerPrefs.SetFloat("SoundVolume", value);
+        SoundManager.Instance.SoundVolume(value);
+    }
+
+    public void OnOffSettingPanel()
+    {
+        settingPanel.SetActive(!settingPanel.activeSelf);
+        Time.timeScale = settingPanel.activeSelf ? 0.0f : 1.0f;
+    }
+
+    public void OnOffStorePanel()
+    {
+        storePanel.SetActive(!storePanel.activeSelf);
+        Time.timeScale = storePanel.activeSelf ? 0.0f : 1.0f;
+        if (storePanel.activeSelf)
+            storePanel.GetComponent<StoreBox>();
+    }
+
+    public void GameExit()
+    {
+        PlayerPrefs.DeleteAll();
+        PlayerCtrl.initHp = 500;
+        PlayerCtrl.hp = 500;
+        SceneManager.LoadScene("TitleScene");
+    }
+
+    public void UseSkill_Key(SkillType skType)
+    {
+        if (GlobalValue.g_skillCount[(int)skType] <= 0)
             return;
 
-        if (m_Player != null)
-            m_Player.UseSkill_Item(a_SkType);
+        PlayerCtrl.instance.UseSkill_Item(skType);
 
-        if ((int)a_SkType < m_SkInvenNode.Length)
-            m_SkInvenNode[(int)a_SkType].m_SkCountText.text =
-                        GlobalValue.g_SkillCount[(int)a_SkType].ToString();
+        if ((int)skType < skInvenNode.Length)
+            skInvenNode[(int)skType].skCountText.text =
+                        GlobalValue.g_skillCount[(int)skType].ToString();
 
     }
 
-    public void SkillTimeMethod(float a_Time, float a_Dur)
+    public void SkillTimeMethod(float time, float duration)
     {
-        GameObject obj = Instantiate(m_SkCoolPrefab) as GameObject;
-        obj.transform.SetParent(m_SkCoolRoot, false);
-        SkillCoolCtrl skNode = obj.GetComponent<SkillCoolCtrl>();
-        skNode.InitState(a_Time, a_Dur);
+        GameObject gameObject = Instantiate(skCoolPrefab);
+        gameObject.transform.SetParent(skCoolRoot, false);
+        SkillCoolCtrl skNode = gameObject.GetComponent<SkillCoolCtrl>();
+        skNode.InitState(time, duration);
     }
 
-    public void DamageText(float a_Value, Vector3 a_Pos, Color a_color)
+    public void DamageText(float value, Vector3 position, Color color)
     {
-        if (m_Damage_Canvas == null || m_DamageRoot == null)
+        if (damageCanvas == null || damageRoot == null)
             return;
 
-        m_DmgClone = (GameObject)Instantiate(m_DamageRoot); //DmgTextRoot 생성
-        m_DmgClone.transform.SetParent(m_Damage_Canvas);    //m_Damage_Canvas에 붙여
-        m_DmgText = m_DmgClone.GetComponent<DmgTextCtrl>();
-        if (m_DmgText != null)
-            m_DmgText.InitDamage(a_Value, a_color);
-        m_StCacPos = new Vector3(a_Pos.x, a_Pos.y + 1.4f, 0.0f);
-        m_DmgClone.transform.position = m_StCacPos;
+        GameObject dmgObject = Instantiate(damageRoot);
+        dmgObject.transform.SetParent(damageCanvas);
+        dmgText = dmgObject.GetComponent<DmgTextCtrl>();
+        if (dmgText != null)
+            dmgText.InitDamage(value, color);
+        stCacPos = new Vector3(position.x, position.y + 1.4f, 0.0f);
+        dmgObject.transform.position = stCacPos;
 
     }
 
-    public void SpawnCoin(Vector3 a_Pos)
+    public void SpawnCoin(Vector3 position)
     {
-        if (m_CoinItem == null)
+        if (coin == null)
             return;
 
-        GameObject a_CoinObj = Instantiate(m_CoinItem) as GameObject;
-        a_CoinObj.transform.position = a_Pos;
-        Destroy(a_CoinObj, 10);
+        GameObject coinObject = Instantiate(coin);
+        coinObject.transform.position = position;
+        Destroy(coinObject, 10);
     }
 
-    public void SpawnDia(Vector3 a_Pos)
+    public void SpawnDiamond(Vector3 position)
     {
-        if (m_DiaItem == null)
+        if (diamond == null)
             return;
 
-        GameObject a_DiaObj = Instantiate(m_DiaItem) as GameObject;
-        a_DiaObj.transform.position = a_Pos;
-        Destroy(a_DiaObj, 10);
+        GameObject diamondObject = Instantiate(diamond);
+        diamondObject.transform.position = position;
+        Destroy(diamondObject, 10);
     }
 
     public void AddGold(int value = 10)
-    {        
-        if (m_CurGold < 0)
-            m_CurGold = 0;
+    {
+        if (curGold < 0)
+            curGold = 0;
 
         if (GlobalValue.g_UserGold <= 0)
             GlobalValue.g_UserGold = 0;
 
-        m_CurGold += value;
+        curGold += value;
         GlobalValue.g_UserGold += value;
 
-        m_GoldText.text = GlobalValue.g_UserGold.ToString();
+        goldText.text = GlobalValue.g_UserGold.ToString();
         PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
-    }
-
-    public void InitRefreshUI()
-    {
-        if (GlobalValue.g_UserGold <= 0)
-            GlobalValue.g_UserGold = 0;
-
-        if (m_GoldText != null)
-            m_GoldText.text = GlobalValue.g_UserGold.ToString();
-
-        if (m_HpBarImg != null)
-            m_HpBarImg.fillAmount = PlayerCtrl.hp / PlayerCtrl.initHp;
-        
-        for (int i = 0; i < StoreBox.skill.Length; i++)
-        {
-            if (m_SkInvenNode.Length <= i)
-                return;
-
-            m_SkInvenNode[i].m_SkType = (SkillType)i;
-            m_SkInvenNode[i].m_SkCountText.text = StoreBox.skill[i].ToString();
-        }
     }
 
     public void RefreshSkill()
     {
-        for (int i = 0; i < GlobalValue.g_SkillCount.Length; i++)
+        for (int i = 0; i < GlobalValue.g_skillCount.Length; i++)
         {
-            if (m_SkInvenNode.Length <= i)
+            if (skInvenNode.Length <= i)
                 return;
 
-            m_SkInvenNode[i].m_SkType = (SkillType)i;
-            m_SkInvenNode[i].m_SkCountText.text = GlobalValue.g_SkillCount[i].ToString();
+            skInvenNode[i].skType = (SkillType)i;
+            skInvenNode[i].skCountText.text = GlobalValue.g_skillCount[i].ToString();
         }
     }
 
     public void GameOver()
     {
-        m_gameState = GameState.GameOver;
-
+        gameState = GameState.GameOver;
         Time.timeScale = 0.0f;
 
         PlayerPrefs.DeleteAll();
         PlayerCtrl.initHp = 500;
         PlayerCtrl.hp = 500;
 
-        if (GameOverPanel != null && GameOverPanel.activeSelf == false)
-            GameOverPanel.SetActive(true);
-
+        GameEndPanelUI();
     }
 
-    public void GameEnding()
+    private void GameEndPanelUI()
     {
-        m_gameState = GameState.Ending;
+        if (gameOverPanel != null)
+            gameOverPanel.SetActive(true);
 
-        Time.timeScale = 0.0f;
-
-        PlayerPrefs.DeleteAll();
-
-        if (GameOverPanel != null && GameOverPanel.activeSelf == false)
-            GameOverPanel.SetActive(true);
-
-        m_titleTxt.text = "GAME ENDING !";
-
-        if (m_ReplayBtn != null)
-            m_ReplayBtn.onClick.AddListener(() =>
+        if (replayBtn != null)
+        {
+            replayBtn.onClick.AddListener(() =>
             {
                 SceneManager.LoadScene("Level1");
                 SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
             });
+        }
 
-        if (m_GameExitBtn != null)
-            m_GameExitBtn.onClick.AddListener(() =>
+        if (gameExitBtn != null)
+        {
+            gameExitBtn.onClick.AddListener(() =>
             {
                 SceneManager.LoadScene("TitleScene");
             });
+        }
     }
 
-    
+    public void GameEnding()
+    {
+        gameState = GameState.Ending;
+        Time.timeScale = 0.0f;
+
+        PlayerPrefs.DeleteAll();
+
+        titleText.text = "GAME ENDING !";
+        GameEndPanelUI();
+    }
 }
 

@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-//Âü°í ¸µÅ© : https://glikmakesworld.tistory.com/2
-//Á¦³×¸¯ ¹®¹ý
-public class G_Singleton<T> : MonoBehaviour where T : G_Singleton<T> //Scene ÀÌ ³Ñ¾î°¡´õ¶óµµ »ç¶óÁöÁö ¾Ê´Â ½Ì±ÛÅÏ
+//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å© : https://glikmakesworld.tistory.com/2
+//ï¿½ï¿½ï¿½×¸ï¿½ ï¿½ï¿½ï¿½ï¿½
+public class G_Singleton<T> : MonoBehaviour where T : G_Singleton<T> //Scene ï¿½ï¿½ ï¿½Ñ¾î°¡ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´ï¿½ ï¿½Ì±ï¿½ï¿½ï¿½
 {
 	private static T m_Instance = null;
 	private static object _syncobj = new object();
@@ -31,12 +31,12 @@ public class G_Singleton<T> : MonoBehaviour where T : G_Singleton<T> //Scene ÀÌ 
 
 					if (m_Instance == null)
 					{
-						//ÀÌÂÊÀÌ Ã¹¹øÂ°·Î µé¾î¿À°í...
+						//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã¹ï¿½ï¿½Â°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½...
 						string goName = typeof(T).ToString();
 						GameObject a_go = GameObject.Find(goName);
 						if (a_go == null)
 							a_go = new GameObject(goName);
-						m_Instance = a_go.AddComponent<T>();  //Awake()°¡ ÀÌÂÊ¿¡¼­ ¹ß»ýµÈ´Ù.
+						m_Instance = a_go.AddComponent<T>();  //Awake()ï¿½ï¿½ ï¿½ï¿½ï¿½Ê¿ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ï¿½È´ï¿½.
 					}
 					else
 					{
@@ -51,7 +51,7 @@ public class G_Singleton<T> : MonoBehaviour where T : G_Singleton<T> //Scene ÀÌ 
 
 	public virtual void Awake()
 	{
-		//ÀÌÂÊÀÌ µÎ¹øÂ°·Î µé¾î¿Â´Ù.
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î¹ï¿½Â°ï¿½ï¿½ ï¿½ï¿½ï¿½Â´ï¿½.
 		Init();
 	}
 
@@ -69,16 +69,16 @@ public class G_Singleton<T> : MonoBehaviour where T : G_Singleton<T> //Scene ÀÌ 
 				DestroyImmediate(base.gameObject);
 			}
 		}
-	} // ÃÊ±âÈ­¸¦ »ó¼ÓÀ» ÅëÇØ ±¸Çö  
+	}
 
-	private void OnApplicationQuit()  //¾Û °­Á¦ Á¾·á½Ã ¹ß»ýµÇ´Â ÇÔ¼ö
+	private void OnApplicationQuit()  //ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ï¿½Ç´ï¿½ ï¿½Ô¼ï¿½
 	{
 		m_Instance = null;
 		appIsClosing = true;
 	}
 }
 
-public class A_Singleton<T> : MonoBehaviour where T : A_Singleton<T>  //Scene ÀÌ ³Ñ¾î°¥ ¶§ »ç¶óÁö´Â ½Ì±ÛÅÏ
+public class A_Singleton<T> : MonoBehaviour where T : A_Singleton<T>  //Scene ï¿½ï¿½ ï¿½Ñ¾î°¥ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ì±ï¿½ï¿½ï¿½
 {
 	private static T m_Instance = null;
 	private static object _syncobj = new object();
@@ -105,12 +105,12 @@ public class A_Singleton<T> : MonoBehaviour where T : A_Singleton<T>  //Scene ÀÌ
 
 					if (m_Instance == null)
 					{
-						//ÀÌÂÊÀÌ Ã¹¹øÂ°·Î µé¾î¿À°í...
+						//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã¹ï¿½ï¿½Â°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½...
 						string goName = typeof(T).ToString();
 						GameObject a_go = GameObject.Find(goName);
 						if (a_go == null)
 							a_go = new GameObject(goName);
-						m_Instance = a_go.AddComponent<T>();  //Awake()°¡ ÀÌÂÊ¿¡¼­ ¹ß»ýµÈ´Ù.
+						m_Instance = a_go.AddComponent<T>();  //Awake()ï¿½ï¿½ ï¿½ï¿½ï¿½Ê¿ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ï¿½È´ï¿½.
 					}
 					else
 					{
@@ -119,13 +119,13 @@ public class A_Singleton<T> : MonoBehaviour where T : A_Singleton<T>  //Scene ÀÌ
 				}
 
 				return m_Instance;
-			}//lock (_syncobj)
-		} // get
-	}//public static T Instance
+			}
+		}
+	}
 
 	public virtual void Awake()
 	{
-		//ÀÌÂÊÀÌ µÎ¹øÂ°·Î µé¾î¿Â´Ù.
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î¹ï¿½Â°ï¿½ï¿½ ï¿½ï¿½ï¿½Â´ï¿½.
 		Init();
 	}
 
@@ -142,7 +142,7 @@ public class A_Singleton<T> : MonoBehaviour where T : A_Singleton<T>  //Scene ÀÌ
 				DestroyImmediate(base.gameObject);
 			}
 		}
-	} // ÃÊ±âÈ­¸¦ »ó¼ÓÀ» ÅëÇØ ±¸Çö  
+	}
 
 	private void OnApplicationQuit()
 	{

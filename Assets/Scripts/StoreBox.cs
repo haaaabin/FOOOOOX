@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,99 +5,68 @@ public class StoreBox : MonoBehaviour
 {
     [HideInInspector] public SkillType m_SkType;
 
-    public GameObject m_StoreBoxObj = null;
-    public Button ExitBtn = null;
-    public Text m_StoreGold = null;
+    public GameObject storePanel = null;
+    public Button closeBtn = null;
+    public Text coinText = null;
 
     public static int[] skill = new int[2];
 
-    public Button m_LifeBuyBtn = null;
-    public Button m_ShieldBuyBtn = null;
+    public Button lifeBuyBtn = null;
+    public Button shieldBuyBtn = null;
 
-    public GameObject MessagePanel = null;
+    public GameObject messagePanel = null;
     public Text messageText = null;
-    public Button M_CloseBtn = null;
+    public Button messageCloseBtn = null;
+
+    private const int ITEM_COST = 100;
+    private const string MESSSAGE = "ë³´ìœ í•˜ì‹  ê³¨ë“œê°€ ë¶€ì¡±í•©ë‹ˆë‹¤.";
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         GlobalValue.LoadGameData();
 
-        if (ExitBtn != null)
-            ExitBtn.onClick.AddListener(() =>
+        if (lifeBuyBtn != null)
+            lifeBuyBtn.onClick.AddListener(() => BuyItem(SkillType.Skill_0));
+
+        if (shieldBuyBtn != null)
+            shieldBuyBtn.onClick.AddListener(() => BuyItem(SkillType.Skill_1));
+
+        if (messageCloseBtn != null)
+            messageCloseBtn.onClick.AddListener(() =>
             {
-                Time.timeScale = 1.0f;
-                m_StoreBoxObj.SetActive(false);
-            });
-
-        if (m_LifeBuyBtn != null)
-            m_LifeBuyBtn.onClick.AddListener(BuyLifeItem);
-
-        if (m_ShieldBuyBtn != null)
-            m_ShieldBuyBtn.onClick.AddListener(BuyShieldItem);
-
-        if (M_CloseBtn != null)
-            M_CloseBtn.onClick.AddListener(() =>
-            {
-                MessagePanel.SetActive(false);
+                messagePanel.SetActive(false);
             });
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if (m_StoreGold != null)
-            m_StoreGold.text = GlobalValue.g_UserGold.ToString();
+        if (coinText != null)
+            coinText.text = GlobalValue.g_UserGold.ToString();
 
-        GameMgr.Inst.RefreshSkill();
+        GameMgr.Instance.RefreshSkill();
     }
 
-    void BuyLifeItem()
+    private void BuyItem(SkillType skillType)
     {
-        int a_Cost = 100;
-        if (GlobalValue.g_UserGold >= a_Cost)
+        if (GlobalValue.g_UserGold >= ITEM_COST)
         {
-            GlobalValue.g_UserGold -= a_Cost;
+            GlobalValue.g_UserGold -= ITEM_COST;
 
-            m_SkType = SkillType.Skill_0;
-            int a_SkIdx = (int)m_SkType;    //ÀÎµ¦½º·Î º¯È¯
-            GlobalValue.g_SkillCount[a_SkIdx]++;
-            skill[a_SkIdx]++;
+            m_SkType = skillType;
+            int skillIndex = (int)m_SkType;
+            GlobalValue.g_skillCount[skillIndex]++;
+            skill[skillIndex]++;
 
-            string a_Skill = "SkItem_" + (a_SkIdx).ToString();
-            PlayerPrefs.SetInt(a_Skill, GlobalValue.g_SkillCount[a_SkIdx]);
+            string skillKey = "SKItem_" + skillIndex.ToString();
+            PlayerPrefs.SetInt(skillKey, GlobalValue.g_skillCount[skillIndex]);
             PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
-
         }
         else
         {
-            MessagePanel.SetActive(true);
-            messageText.text = "º¸À¯ ±Ý¾× ºÎÁ·";
+            messagePanel.SetActive(true);
+            messageText.text = MESSSAGE;
         }
     }
-
-    void BuyShieldItem()
-    {
-        int a_Cost = 100;
-        if (GlobalValue.g_UserGold >= a_Cost)
-        {
-            GlobalValue.g_UserGold -= a_Cost;
-
-            m_SkType = SkillType.Skill_1;
-            int a_SkIdx = (int)m_SkType;    //ÀÎµ¦½º·Î º¯È¯
-            GlobalValue.g_SkillCount[a_SkIdx]++;
-            skill[a_SkIdx]++;
-
-            string a_Skill = "SkItem_" + (a_SkIdx).ToString();
-            PlayerPrefs.SetInt(a_Skill, GlobalValue.g_SkillCount[a_SkIdx]);
-            PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
-
-        }
-        else
-        {
-            MessagePanel.SetActive(true);
-            messageText.text = "º¸À¯ ±Ý¾× ºÎÁ·";
-        }
-    }
-}  
+}
 

@@ -86,7 +86,7 @@ public class MonsterController : MonoBehaviour
         }
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
         if (!isDie)
         {

@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class AudioNode : MonoBehaviour
 {
-    [HideInInspector] public AudioSource m_AudioSrc = null;     // �� ���̾ AudioSource ������Ʈ�� �����ϱ� ���� ����
-    [HideInInspector] public float m_EffVolume = 0.2f;           // �� ���̾ ���� ����
-    [HideInInspector] public float m_PlayTime = 0.0f;           // �� ���̾ Ÿ�̸�
+    [HideInInspector] public AudioSource m_AudioSrc = null; 
+    [HideInInspector] public float m_EffVolume = 0.2f;  
+    [HideInInspector] public float m_PlayTime = 0.0f;
 
     void Update()
     {
@@ -50,13 +50,13 @@ public class SoundManager : G_Singleton<SoundManager>
         }
     }
 
-    public void LoadChildGameObj()  //���� �ε�
+    public void LoadChildGameObj() 
     {
-        m_AudioSrc = this.gameObject.AddComponent<AudioSource>();   //��ũ��Ʈ�� AudioSource ������Ʈ �߰�
+        m_AudioSrc = this.gameObject.AddComponent<AudioSource>();  
 
-        for (int ii = 0; ii < m_EffSdCount; ii++)    //20�� ����
+        for (int ii = 0; ii < m_EffSdCount; ii++)  
         {
-            GameObject newSoundObj = new GameObject("SoundEffObj");     //�� ���ӿ�����Ʈ ����
+            GameObject newSoundObj = new GameObject("SoundEffObj");    
             newSoundObj.transform.SetParent(this.transform);
             newSoundObj.transform.localPosition = Vector3.zero;
             AudioSource a_AudioSrc = newSoundObj.AddComponent<AudioSource>();
@@ -64,11 +64,10 @@ public class SoundManager : G_Singleton<SoundManager>
             a_AudioSrc.loop = false;
             AudioNode a_AudioNode = newSoundObj.AddComponent<AudioNode>();
             a_AudioNode.m_AudioSrc = a_AudioSrc;
-            m_AudNodeList.Add(a_AudioNode);     //����Ʈ�� ����
+            m_AudNodeList.Add(a_AudioNode);     
 
-        } //for(int ii = 0; ii < m_EffSdCount; ii++)
+        } 
 
-        // --- ���� OnOff, ���� ���� ���� �ε� �� ����
         int a_SoundOnOff = PlayerPrefs.GetInt("SoundOnOff", 1);
         if (a_SoundOnOff == 1)
             SoundOnOff(true);
@@ -77,7 +76,6 @@ public class SoundManager : G_Singleton<SoundManager>
 
         float a_Value = PlayerPrefs.GetFloat("SoundVolume", 1.0f);
         SoundVolume(a_Value);
-        // --- ���� OnOff, ���� ���� ���� �ε� �� ����
 
     }
 
@@ -106,7 +104,7 @@ public class SoundManager : G_Singleton<SoundManager>
         m_AudioSrc.loop = true; 
         m_AudioSrc.Play(); 
 
-    } //public void PlayBGM(string a_FileName, float fVolume = 0.2f)
+    }
 
     public void PlayGUISound(string a_FileName, float fVolume = 0.2f)
     {   

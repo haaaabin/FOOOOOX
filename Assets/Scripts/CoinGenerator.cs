@@ -1,31 +1,18 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class CoinGenerator : MonoBehaviour
 {
-    // ---- ÄÚÀÎ-----
-    [Header(" ---- Coin ----- ")]
-    [HideInInspector] public GameObject m_CoinItem = null;
-    [HideInInspector] public Transform[] Coin_points;
+    [HideInInspector] public GameObject coinObject = null;
+    [HideInInspector] public Transform[] coinPositions;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        //---Coin Spawn
-        m_CoinItem = Resources.Load("Coin") as GameObject;
-
-        Coin_points = GameObject.Find("CoinPos").GetComponentsInChildren<Transform>();
-        for (int i = 1; i < Coin_points.Length; i++)
+        coinObject = Resources.Load("Coin") as GameObject;
+        coinPositions = GameObject.Find("CoinPos").GetComponentsInChildren<Transform>();
+        for (int i = 1; i < coinPositions.Length; i++)
         {
-            GameObject coin = Instantiate(m_CoinItem) as GameObject;
-            coin.transform.position = Coin_points[i].position;
+            GameObject coin = Instantiate(coinObject);
+            coin.transform.position = coinPositions[i].position;
         }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

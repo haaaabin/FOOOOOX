@@ -1,28 +1,16 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class CamCtrl : MonoBehaviour
 {
     public Transform target;
-    public float speed;
-
-    //카메라 영역 설정
     public Vector2 minCameraBoundary;
     public Vector2 maxCameraBoundary;
+    public float speed;
 
-    //Start is called before the first frame update
-    void Start()
+    private void LateUpdate()
     {
-        
-    }
-
-    //Update is called once per frame
-    void LateUpdate()
-    {
-
-        Vector3 targetPos = new Vector3(target.position.x + 3f, target.position.y + 2f, this.transform.position.z) ;
+        Vector3 targetPos = new Vector3(target.position.x + 3f, target.position.y + 1.5f, this.transform.position.z);
 
         if (SceneManager.GetActiveScene().name == "BossScene")
         {
@@ -35,11 +23,9 @@ public class CamCtrl : MonoBehaviour
             }
         }
 
-
         targetPos.x = Mathf.Clamp(targetPos.x, minCameraBoundary.x, maxCameraBoundary.x);
         targetPos.y = Mathf.Clamp(targetPos.y, minCameraBoundary.y, maxCameraBoundary.y);
 
         transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime * speed);
-
     }
 }

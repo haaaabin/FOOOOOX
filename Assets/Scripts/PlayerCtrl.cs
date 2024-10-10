@@ -12,6 +12,7 @@ public enum MovementState
 
 public class PlayerCtrl : MonoBehaviour
 {
+    public static PlayerCtrl instance;
     public static MovementState state = MovementState.idle;
     private Rigidbody2D rigid;
     private Animator anim;
@@ -19,7 +20,7 @@ public class PlayerCtrl : MonoBehaviour
     private SpriteRenderer sprite;
     private float dirX = 0.0f;
     private float moveSpeed = 5.0f;
-    private float jumpPower = 7.0f;
+    private float jumpPower = 15.0f;
     public GameObject bullet;
     public GameObject shootPos;
     private float bulletSpeed = 10.0f;
@@ -29,7 +30,6 @@ public class PlayerCtrl : MonoBehaviour
     public static float hp = 500.0f;
 
     LayerMask playerState;
-
     private LayerMask groundMask = -1;
     LayerMask shieldMask = -1;
 
@@ -39,6 +39,14 @@ public class PlayerCtrl : MonoBehaviour
     private float shieldOnTime = 0.0f;
     private float shieldDuration = 10.0f; //15초 동안 발동
     public GameObject shieldObj = null;
+
+    private void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+        }
+    }
 
     private void Start()
     {
