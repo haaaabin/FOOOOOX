@@ -14,13 +14,16 @@ public class PlayerCtrl : MonoBehaviour
 {
     public static PlayerCtrl instance;
     public static MovementState state = MovementState.idle;
-    private Rigidbody2D rigid;
+    private Rigidbody2D rb;
     private Animator anim;
     private CapsuleCollider2D playerColl;
     private SpriteRenderer sprite;
     private float dirX = 0.0f;
-    private float moveSpeed = 5.0f;
+    private float moveSpeed = 4.5f;
     private float jumpPower = 15.0f;
+    private float inputX = 0f;
+    private bool isJumping = false;
+
     public GameObject bullet;
     public GameObject shootPos;
     private float bulletSpeed = 10.0f;
@@ -40,6 +43,7 @@ public class PlayerCtrl : MonoBehaviour
     private float shieldDuration = 10.0f; //15초 동안 발동
     public GameObject shieldObj = null;
 
+
     private void Awake()
     {
         if (instance == null)
@@ -53,7 +57,7 @@ public class PlayerCtrl : MonoBehaviour
         GlobalValue.LoadGameData();
         Time.timeScale = 1;
 
-        rigid = GetComponent<Rigidbody2D>();
+        rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         playerColl = GetComponent<CapsuleCollider2D>();
         sprite = GetComponent<SpriteRenderer>();
@@ -67,10 +71,69 @@ public class PlayerCtrl : MonoBehaviour
         if (isDie)
             return;
 
-        HandleInput();
-        UpdateAnimState();
+        MoveUpdateAnim();
+        // HandleInput();
+        // UpdateAnimState();
         LimitMove();
         SkillUpdate();
+    }
+
+    private void MoveUpdateAnim()
+    {
+        transform.Translate(inputX * Time.deltaTime * moveSpeed, 0, 0);
+
+        if (isJumping)
+        {
+            rb.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
+            isJumping = false;
+        }
+
+        if (inputX != 0)  // walk
+        {
+            anim.SetInteger("state", 1);
+            transform.localScale = new Vector3(Mathf.Sign(inputX), 1, 1);
+        }
+        else // idle
+        {
+            anim.SetInteger("state", 0);
+        }
+
+        if (rb.velocity.y > 0.1f)    // jump
+        {
+            anim.SetInteger("state", 2);
+        }
+        else if (rb.velocity.y < -0.1f)  // land
+        {
+            anim.SetInteger("state", 3);
+        }
+    }
+
+    public void MoveLeft()
+    {
+        inputX = -1f;
+    }
+
+    public void MoveRight()
+    {
+        inputX = 1f;
+    }
+
+    public void StopMove()
+    {
+        inputX = 0f;
+    }
+
+    public void Jump()
+    {
+        if (IsGrounded())
+        {
+            isJumping = true;
+        }
+    }
+
+    public void Fire()
+    {
+        ShootBullet();
     }
 
     private void HandleInput()
@@ -80,11 +143,33 @@ public class PlayerCtrl : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
         {
-            rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
+            rb.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
         }
         if (Input.GetKeyDown(KeyCode.Z))
         {
             ShootBullet();
+        }
+    }
+
+    private void UpdateAnimState()
+    {
+        if (dirX != 0)  // walk
+        {
+            anim.SetInteger("state", 1);
+            transform.localScale = new Vector3(Mathf.Sign(dirX), 1, 1);
+        }
+        else // idle
+        {
+            anim.SetInteger("state", 0);
+        }
+
+        if (rb.velocity.y > 0.1f)    // jump
+        {
+            anim.SetInteger("state", 2);
+        }
+        else if (rb.velocity.y < -0.1f)  // land
+        {
+            anim.SetInteger("state", 3);
         }
     }
 
@@ -113,27 +198,7 @@ public class PlayerCtrl : MonoBehaviour
         return Physics2D.BoxCast(playerColl.bounds.center, playerColl.bounds.size, 0f, Vector2.down, 0.5f, groundMask);
     }
 
-    private void UpdateAnimState()
-    {
-        if (dirX != 0)  // walk
-        {
-            anim.SetInteger("state", 1);
-            transform.localScale = new Vector3(Mathf.Sign(dirX), 1, 1);
-        }
-        else // idle
-        {
-            anim.SetInteger("state", 0);
-        }
 
-        if (rigid.velocity.y > 0.1f)    // jump
-        {
-            anim.SetInteger("state", 2);
-        }
-        else if (rigid.velocity.y < -0.1f)  // land
-        {
-            anim.SetInteger("state", 3);
-        }
-    }
 
     private void OnCollisionEnter2D(Collision2D coll)
     {
@@ -144,7 +209,7 @@ public class PlayerCtrl : MonoBehaviour
                 break;
             case "Snail":
                 // 떨어지는 중이고 snail보다 위에 있을 때 -> 밟을 때
-                if (rigid.velocity.y < 0 && transform.position.y > coll.transform.position.y)
+                if (rb.velocity.y < 0 && transform.position.y > coll.transform.position.y)
                 {
                     OnAttack(coll.transform);
                 }
@@ -220,7 +285,7 @@ public class PlayerCtrl : MonoBehaviour
 
     private void OnAttack(Transform enemy)
     {
-        rigid.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
+        rb.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
         MonsterController mon = enemy.GetComponent<MonsterController>();
         mon.MonsterTakeDamage();
     }
@@ -336,7 +401,7 @@ public class PlayerCtrl : MonoBehaviour
         sprite.color = new Color(1, 1, 1, 0.4f);
 
         int direction = transform.position.x - targetPos.x > 0 ? 1 : -1;
-        rigid.AddForce(new Vector2(direction, 0.5f) * 5, ForceMode2D.Impulse);
+        rb.AddForce(new Vector2(direction, 0.5f) * 5, ForceMode2D.Impulse);
         Invoke("OffDamaged", 1);
     }
 
@@ -345,6 +410,4 @@ public class PlayerCtrl : MonoBehaviour
         gameObject.layer = 6;
         sprite.color = new Color(1, 1, 1, 1);
     }
-
-
 }
