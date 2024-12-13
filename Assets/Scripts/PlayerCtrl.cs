@@ -32,6 +32,12 @@ public class PlayerCtrl : MonoBehaviour
     public static float initHp = 500.0f;
     public static float hp = 500.0f;
 
+    public int maxHealth = 5;
+    public int currentHealth;
+    public Image[] heartImages;
+    public Sprite fullHeart;
+    public Sprite emptyHeart;
+
     LayerMask playerState;
     private LayerMask groundMask = -1;
     LayerMask shieldMask = -1;
@@ -42,6 +48,7 @@ public class PlayerCtrl : MonoBehaviour
     private float shieldOnTime = 0.0f;
     private float shieldDuration = 10.0f; //15초 동안 발동
     public GameObject shieldObj = null;
+
 
 
     private void Awake()
@@ -57,6 +64,8 @@ public class PlayerCtrl : MonoBehaviour
         GlobalValue.LoadGameData();
         Time.timeScale = 1;
 
+        currentHealth = maxHealth;
+
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         playerColl = GetComponent<CapsuleCollider2D>();
@@ -71,11 +80,28 @@ public class PlayerCtrl : MonoBehaviour
         if (isDie)
             return;
 
+        UpdateHeart();
+
         MoveUpdateAnim();
         // HandleInput();
         // UpdateAnimState();
         LimitMove();
         SkillUpdate();
+    }
+
+    private void UpdateHeart()
+    {
+        for (int i = 0; i < heartImages.Length; i++)
+        {
+            if (i < currentHealth)
+            {
+                heartImages[i].sprite = fullHeart;
+            }
+            else
+            {
+                heartImages[i].sprite = emptyHeart;
+            }
+        }
     }
 
     private void MoveUpdateAnim()
@@ -150,7 +176,6 @@ public class PlayerCtrl : MonoBehaviour
             ShootBullet();
         }
     }
-
     private void UpdateAnimState()
     {
         if (dirX != 0)  // walk
@@ -198,14 +223,12 @@ public class PlayerCtrl : MonoBehaviour
         return Physics2D.BoxCast(playerColl.bounds.center, playerColl.bounds.size, 0f, Vector2.down, 0.5f, groundMask);
     }
 
-
-
     private void OnCollisionEnter2D(Collision2D coll)
     {
         switch (coll.gameObject.tag)
         {
             case "Monster":
-                PlayerTakeDemage(20, coll.transform.position);
+                TakeDamage(1, coll.transform.position);
                 break;
             case "Snail":
                 // 떨어지는 중이고 snail보다 위에 있을 때 -> 밟을 때
@@ -215,27 +238,27 @@ public class PlayerCtrl : MonoBehaviour
                 }
                 else
                 {
-                    PlayerTakeDemage(20, coll.transform.position);
+                    TakeDamage(1, coll.transform.position);
                 }
                 break;
             case "M_Bullet":
                 Destroy(coll.gameObject);
-                PlayerTakeDemage(20, coll.transform.position);
+                TakeDamage(1, coll.transform.position);
                 SoundManager.Instance.PlayGUISound("Hit", 1.0f);
                 break;
             case "Boss":
-                PlayerTakeDemage(50, coll.transform.position);
+                TakeDamage(2, coll.transform.position);
                 break;
         }
 
         if (coll.gameObject.layer == LayerMask.NameToLayer("Trap"))
         {
-            PlayerTakeDemage(20, coll.transform.position);
+            TakeDamage(1, coll.transform.position);
         }
 
         if (coll.gameObject.layer == LayerMask.NameToLayer("Ball"))
         {
-            PlayerTakeDemage(20, coll.transform.position);
+            TakeDamage(1, coll.transform.position);
         }
 
         if (coll.gameObject.name.Contains("DieZone"))
@@ -290,29 +313,26 @@ public class PlayerCtrl : MonoBehaviour
         mon.MonsterTakeDamage();
     }
 
-    private void PlayerTakeDemage(float damage, Vector2 position)
+    private void TakeDamage(int damage, Vector2 position)
     {
-        if (shieldOnTime > 0)  //쉴드 스킬 발동 중일 때.. 데미지 스킬
-            return;
+        currentHealth -= damage;
+        UpdateHeart();
 
-        GameMgr.Instance.DamageText(-damage, transform.position, Color.blue);
-        hp -= damage;
-        GlobalValue.g_Hp -= damage;
-        PlayerPrefs.SetFloat("Hp", GlobalValue.g_Hp);
-
-        if (hpBarImg != null)
+        if (currentHealth <= 0)
         {
-            hpBarImg.fillAmount = hp / initHp;
-        }
-
-        if (hp <= 0)
-        {
-            hp = 0;
             Die();
         }
 
         SoundManager.Instance.PlayGUISound("Hit", 1.0f);
-        OnDamaged(position);
+        GameMgr.Instance.DamageText(-damage, transform.position, Color.blue);
+
+        // 넉백 효과
+        gameObject.layer = 10;
+        sprite.color = new Color(1, 1, 1, 0.4f);
+
+        int direction = transform.position.x - position.x > 0 ? 1 : -1;
+        rb.AddForce(new Vector2(direction, 0.5f) * 5, ForceMode2D.Impulse);
+        Invoke("OffDamaged", 1);
     }
 
     private void Die()
@@ -393,16 +413,6 @@ public class PlayerCtrl : MonoBehaviour
         Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Monster"), ignore);
         Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Trap"), ignore);
         Physics2D.IgnoreLayerCollision(LayerMask.NameToLayer("Player"), LayerMask.NameToLayer("Boss"), ignore);
-    }
-
-    private void OnDamaged(Vector2 targetPos)
-    {
-        gameObject.layer = 10;
-        sprite.color = new Color(1, 1, 1, 0.4f);
-
-        int direction = transform.position.x - targetPos.x > 0 ? 1 : -1;
-        rb.AddForce(new Vector2(direction, 0.5f) * 5, ForceMode2D.Impulse);
-        Invoke("OffDamaged", 1);
     }
 
     private void OffDamaged()
