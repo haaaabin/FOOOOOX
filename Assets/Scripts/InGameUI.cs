@@ -1,19 +1,11 @@
+using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
-public enum GameState
+public class InGameUI : MonoBehaviour
 {
-    Level1,
-    Boss,
-    GameOver,
-    Ending
-}
-
-public class GameMgr : MonoBehaviour
-{
-    [HideInInspector] public SkillType skillType = SkillType.SkCount;
-    public static GameState gameState = GameState.Level1;
+    public static InGameUI instance;
 
     private DmgTextCtrl dmgText;
     private Vector3 stCacPos;
@@ -21,12 +13,12 @@ public class GameMgr : MonoBehaviour
     public Transform damageCanvas;
     public GameObject damageRoot;
 
-    public Text goldText;
+    public TextMeshProUGUI scoreText;
 
     [Header(" ---- Coin, Dia ----- ")]
     public GameObject coin;
     public GameObject diamond;
-    int curGold = 0;
+    private int curScore = 0;
 
     [Header("---- Setting -----")]
     public Button settingBtn;
@@ -43,6 +35,8 @@ public class GameMgr : MonoBehaviour
 
     [Header("---- GameOver -----")]
     public GameObject gameOverPanel;
+    public GameObject tobBarPanel;
+    public GameObject controlPanel;
     public Button replayBtn;
     // public Button gameExitBtn;
     public Text titleText;
@@ -52,56 +46,29 @@ public class GameMgr : MonoBehaviour
     public Transform skCoolRoot;
     public SkInvenNode[] skInvenNode;
 
-    public Image hpBarImg;
-    public static GameMgr Instance;
-
-    private void Awake()
+    void Awake()
     {
-        if (Instance != null)
-            Destroy(Instance);
-        Instance = this;
+        if (!instance)
+        {
+            instance = this;
+            DontDestroyOnLoad(this.gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
-    private void Start()
+    void Start()
     {
-        GlobalValue.LoadGameData();
-        Time.timeScale = 1.0f;
-
         settingPanel.SetActive(false);
         storePanel.SetActive(false);
         gameOverPanel.SetActive(false);
+        tobBarPanel.SetActive(true);
+        controlPanel.SetActive(true);
 
         InitRefreshUI();
-        RefreshSkill();
         InitSoundUI();
-
-        if (SceneManager.GetActiveScene().name == "Level1")
-        {
-            SoundManager.Instance.PlayBGM("hurry_up_and_run", 1.0f);
-
-        }
-        else if (SceneManager.GetActiveScene().name == "BossScene")
-        {
-            SoundManager.Instance.PlayBGM("Maniac", 1.0f);
-        }
-    }
-
-
-    private void Update()
-    {
-        if (!(gameState == GameState.GameOver))
-        {
-            if (Input.GetKeyDown(KeyCode.Alpha1) ||
-                Input.GetKeyDown(KeyCode.Keypad1))
-            {
-                UseSkill_Key(SkillType.Skill_0);
-            }
-            else if (Input.GetKeyDown(KeyCode.Alpha2) ||
-                Input.GetKeyDown(KeyCode.Keypad2))
-            {
-                UseSkill_Key(SkillType.Skill_1);
-            }
-        }
     }
 
     private void InitRefreshUI()
@@ -109,20 +76,20 @@ public class GameMgr : MonoBehaviour
         if (GlobalValue.g_UserGold <= 0)
             GlobalValue.g_UserGold = 0;
 
-        if (goldText != null)
-            goldText.text = GlobalValue.g_UserGold.ToString();
+        if (scoreText != null)
+            scoreText.text = GlobalValue.g_UserGold.ToString();
 
-        if (hpBarImg != null)
-            hpBarImg.fillAmount = PlayerCtrl.hp / PlayerCtrl.initHp;
+        // if (hpBarImg != null)
+        //     hpBarImg.fillAmount = PlayerCtrl.hp / PlayerCtrl.initHp;
 
-        for (int i = 0; i < StoreBox.skill.Length; i++)
-        {
-            if (skInvenNode.Length <= i)
-                return;
+        // for (int i = 0; i < StoreBox.skill.Length; i++)
+        // {
+        //     if (skInvenNode.Length <= i || skInvenNode[i] == null)
+        //         return;
 
-            skInvenNode[i].skType = (SkillType)i;
-            skInvenNode[i].skCountText.text = StoreBox.skill[i].ToString();
-        }
+        //     skInvenNode[i].skType = (SkillType)i;
+        //     skInvenNode[i].skCountText.text = StoreBox.skill[i].ToString();
+        // }
     }
 
     private void InitSoundUI()
@@ -162,43 +129,6 @@ public class GameMgr : MonoBehaviour
         Time.timeScale = settingPanel.activeSelf ? 0.0f : 1.0f;
     }
 
-    public void OnOffStorePanel()
-    {
-        storePanel.SetActive(!storePanel.activeSelf);
-        Time.timeScale = storePanel.activeSelf ? 0.0f : 1.0f;
-        if (storePanel.activeSelf)
-            storePanel.GetComponent<StoreBox>();
-    }
-
-    public void GameExit()
-    {
-        PlayerPrefs.DeleteAll();
-        PlayerCtrl.initHp = 500;
-        PlayerCtrl.hp = 500;
-        SceneManager.LoadScene("TitleScene");
-    }
-
-    public void UseSkill_Key(SkillType skType)
-    {
-        if (GlobalValue.g_skillCount[(int)skType] <= 0)
-            return;
-
-        PlayerCtrl.instance.UseSkill_Item(skType);
-
-        if ((int)skType < skInvenNode.Length)
-            skInvenNode[(int)skType].skCountText.text =
-                        GlobalValue.g_skillCount[(int)skType].ToString();
-
-    }
-
-    public void SkillTimeMethod(float time, float duration)
-    {
-        GameObject gameObject = Instantiate(skCoolPrefab);
-        gameObject.transform.SetParent(skCoolRoot, false);
-        SkillCoolCtrl skNode = gameObject.GetComponent<SkillCoolCtrl>();
-        skNode.InitState(time, duration);
-    }
-
     public void DamageText(float value, Vector3 position, Color color)
     {
         if (damageCanvas == null || damageRoot == null)
@@ -234,49 +164,31 @@ public class GameMgr : MonoBehaviour
         Destroy(diamondObject, 10);
     }
 
-    public void AddGold(int value = 10)
+    public void AddScore(int value = 50)
     {
-        if (curGold < 0)
-            curGold = 0;
+        if (curScore < 0)
+            curScore = 0;
 
-        if (GlobalValue.g_UserGold <= 0)
-            GlobalValue.g_UserGold = 0;
+        curScore += value;
+        scoreText.text = curScore.ToString();
 
-        curGold += value;
-        GlobalValue.g_UserGold += value;
-
-        goldText.text = GlobalValue.g_UserGold.ToString();
-        PlayerPrefs.SetInt("UserGold", GlobalValue.g_UserGold);
-    }
-
-    public void RefreshSkill()
-    {
-        for (int i = 0; i < GlobalValue.g_skillCount.Length; i++)
-        {
-            if (skInvenNode.Length <= i)
-                return;
-
-            skInvenNode[i].skType = (SkillType)i;
-            skInvenNode[i].skCountText.text = GlobalValue.g_skillCount[i].ToString();
-        }
+        GlobalValue.g_UserGold += curScore;
+        PlayerPrefs.SetInt("UserScore", GlobalValue.g_UserGold);
     }
 
     public void GameOver()
     {
-        gameState = GameState.GameOver;
+        GameManager.Instance().gameState = GameManager.GameState.GameOver;
         Time.timeScale = 0.0f;
-
         PlayerPrefs.DeleteAll();
-        PlayerCtrl.initHp = 500;
-        PlayerCtrl.hp = 500;
-
         GameEndPanelUI();
     }
 
     private void GameEndPanelUI()
     {
-        if (gameOverPanel != null)
-            gameOverPanel.SetActive(true);
+        gameOverPanel.SetActive(true);
+        tobBarPanel.SetActive(false);
+        controlPanel.SetActive(false);
 
         if (replayBtn != null)
         {
@@ -298,7 +210,8 @@ public class GameMgr : MonoBehaviour
 
     public void GameEnding()
     {
-        gameState = GameState.Ending;
+        GameManager.Instance().gameState = GameManager.GameState.Ending;
+
         Time.timeScale = 0.0f;
 
         PlayerPrefs.DeleteAll();
@@ -307,4 +220,3 @@ public class GameMgr : MonoBehaviour
         GameEndPanelUI();
     }
 }
-
