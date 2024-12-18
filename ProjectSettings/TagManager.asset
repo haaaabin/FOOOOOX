@@ -14,6 +14,7 @@ TagManager:
   - Boss
   - Door
   - Shield
+  - RemoveBallZone
   layers:
   - Default
   - TransparentFX
