@@ -4,7 +4,7 @@ public class BulletController : MonoBehaviour
 {
     private Vector3 direction = Vector3.right;
     private float moveSpeed = 10.0f;
-    private float lifeTime = 0.7f; // 기본 수명
+    private float lifeTime = 1f; // 기본 수명
 
     private void Start()
     {

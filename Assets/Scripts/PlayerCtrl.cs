@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public enum MovementState
 {
@@ -19,37 +18,19 @@ public class PlayerCtrl : MonoBehaviour
     private CapsuleCollider2D playerColl;
     private SpriteRenderer sprite;
     private float dirX = 0.0f;
-    private float moveSpeed = 4.5f;
-    private float jumpPower = 15.0f;
+    private float moveSpeed = 5f;
+    private float jumpPower = 10.0f;
     private float inputX = 0f;
     private bool isJumping = false;
 
     public GameObject bullet;
     public GameObject shootPos;
     private float bulletSpeed = 10.0f;
+    public int maxHp = 5;
+    public int currentHp;
 
-    public Image hpBarImg;
-    public static float initHp = 500.0f;
-    public static float hp = 500.0f;
-
-    public int maxHealth = 5;
-    public int currentHealth;
-    public Image[] heartImages;
-    public Sprite fullHeart;
-    public Sprite emptyHeart;
-
-    LayerMask playerState;
     private LayerMask groundMask = -1;
-    LayerMask shieldMask = -1;
-
     private bool isDie = false;
-
-    //-- 쉴드
-    private float shieldOnTime = 0.0f;
-    private float shieldDuration = 10.0f; //15초 동안 발동
-    public GameObject shieldObj = null;
-
-
 
     private void Awake()
     {
@@ -61,16 +42,13 @@ public class PlayerCtrl : MonoBehaviour
 
     private void Start()
     {
-        GlobalValue.LoadGameData();
         Time.timeScale = 1;
-
-        currentHealth = maxHealth;
+        currentHp = maxHp;
 
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         playerColl = GetComponent<CapsuleCollider2D>();
         sprite = GetComponent<SpriteRenderer>();
-        // groundMask = 1 << LayerMask.NameToLayer("Platform") | 1 << LayerMask.NameToLayer("AirPlatform");
         groundMask = LayerMask.GetMask("Platform", "AirPlatform");
         isDie = false;
     }
@@ -80,28 +58,10 @@ public class PlayerCtrl : MonoBehaviour
         if (isDie)
             return;
 
-        UpdateHeart();
-
         MoveUpdateAnim();
-        // HandleInput();
-        // UpdateAnimState();
+        HandleInput();
+        UpdateAnimState();
         LimitMove();
-        SkillUpdate();
-    }
-
-    private void UpdateHeart()
-    {
-        for (int i = 0; i < heartImages.Length; i++)
-        {
-            if (i < currentHealth)
-            {
-                heartImages[i].sprite = fullHeart;
-            }
-            else
-            {
-                heartImages[i].sprite = emptyHeart;
-            }
-        }
     }
 
     private void MoveUpdateAnim()
@@ -176,6 +136,7 @@ public class PlayerCtrl : MonoBehaviour
             ShootBullet();
         }
     }
+
     private void UpdateAnimState()
     {
         if (dirX != 0)  // walk
@@ -247,7 +208,7 @@ public class PlayerCtrl : MonoBehaviour
                 SoundManager.Instance.PlayGUISound("Hit", 1.0f);
                 break;
             case "Boss":
-                TakeDamage(2, coll.transform.position);
+                TakeDamage(1, coll.transform.position);
                 break;
         }
 
@@ -271,13 +232,13 @@ public class PlayerCtrl : MonoBehaviour
     {
         if (coll.gameObject.name.Contains("Coin"))
         {
-            GameMgr.Instance.AddGold();
+            InGameUI.instance.AddScore();
             Destroy(coll.gameObject);
             SoundManager.Instance.PlayGUISound("coin", 1.0f);
         }
         else if (coll.gameObject.CompareTag("Door"))
         {
-            GameMgr.gameState = GameState.Boss;
+            GameManager.Instance().gameState = GameManager.GameState.Boss;
             PlayerPrefs.SetFloat("Hp", GlobalValue.g_Hp);
             SceneManager.LoadScene("BossScene");
             SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
@@ -290,11 +251,10 @@ public class PlayerCtrl : MonoBehaviour
 
         else if (coll.gameObject.name.Contains("Dia"))
         {
-            GameMgr.gameState = GameState.Ending;
-
+            GameManager.Instance().gameState = GameManager.GameState.Ending;
             Destroy(coll.gameObject);
             SoundManager.Instance.PlayGUISound("coin", 1.0f);
-            GameMgr.Instance.GameEnding();
+            InGameUI.instance.GameEnding();
         }
     }
 
@@ -315,16 +275,16 @@ public class PlayerCtrl : MonoBehaviour
 
     private void TakeDamage(int damage, Vector2 position)
     {
-        currentHealth -= damage;
-        UpdateHeart();
+        currentHp -= damage;
+        InGameUI.instance.UpdateHeart();
 
-        if (currentHealth <= 0)
+        if (currentHp <= 0)
         {
             Die();
         }
 
         SoundManager.Instance.PlayGUISound("Hit", 1.0f);
-        GameMgr.Instance.DamageText(-damage, transform.position, Color.blue);
+        InGameUI.instance.DamageText(-damage, transform.position, Color.blue);
 
         // 넉백 효과
         gameObject.layer = 10;
@@ -339,73 +299,8 @@ public class PlayerCtrl : MonoBehaviour
     {
         isDie = true;
         anim.SetTrigger("Die");
-        GameMgr.Instance.GameOver();
+        InGameUI.instance.GameOver();
         SoundManager.Instance.m_AudioSrc.clip = null;  //배경음 플레이 안함
-    }
-
-    public void UseSkill_Item(SkillType skillType)
-    {
-        switch (skillType)
-        {
-            case SkillType.Skill_0:
-                Heal(initHp * 0.3f);
-                break;
-            case SkillType.Skill_1:
-                ActivateShield();
-                break;
-        }
-
-        int skillIndex = (int)skillType;    //SkillType 인덱스로 변환
-        GlobalValue.g_skillCount[skillIndex]--;    //스킬카운트 차감
-        PlayerPrefs.SetInt($"SkItem_{skillIndex}", GlobalValue.g_skillCount[skillIndex]);
-    }
-
-    private void Heal(float amount)
-    {
-        hp += amount;
-
-        GameMgr.Instance.DamageText(amount, transform.position, new Color(0.18f, 0.5f, 0.34f));
-        GlobalValue.g_Hp += hp;
-        PlayerPrefs.SetFloat("Hp", GlobalValue.g_Hp);
-
-        if (hp > initHp)
-            hp = initHp;
-
-        if (hpBarImg != null)
-            hpBarImg.fillAmount = hp / initHp;
-    }
-
-    private void ActivateShield()
-    {
-        if (shieldOnTime > 0)
-            return;
-
-        shieldOnTime = shieldDuration;
-        GameMgr.Instance.SkillTimeMethod(shieldOnTime, shieldDuration);
-    }
-
-    private void SkillUpdate()
-    {
-        //쉴드 상태 업데이트
-        if (0.0f < shieldOnTime)
-        {
-            shieldOnTime -= Time.deltaTime;
-            if (shieldObj != null && shieldObj.activeSelf == false)
-            {
-                shieldObj.SetActive(true);
-            }
-
-            SetLayerCollisions(true);
-        }
-        else
-        {
-            if (shieldObj != null && shieldObj.activeSelf == true)
-            {
-                shieldObj.SetActive(false);
-            }
-
-            SetLayerCollisions(false);
-        }
     }
 
     private void SetLayerCollisions(bool ignore)

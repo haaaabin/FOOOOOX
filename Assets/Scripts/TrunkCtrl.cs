@@ -9,11 +9,6 @@ public class TrunkCtrl : MonoBehaviour
     public GameObject m_TshootPos = null;
 
     public int turn;
-
-    float shootTime = 0;
-    float shootDelay = 0.9f;
-
-
     Rigidbody2D rigid;
     SpriteRenderer sprite;
     Animator anim;

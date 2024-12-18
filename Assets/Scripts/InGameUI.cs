@@ -2,23 +2,30 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using Unity.VisualScripting;
 
 public class InGameUI : MonoBehaviour
 {
     public static InGameUI instance;
 
-    private DmgTextCtrl dmgText;
+    [Header("--- Damage Text---")]
     private Vector3 stCacPos;
-    [Header("--- Damage Text ---")]
     public Transform damageCanvas;
     public GameObject damageRoot;
+    private DamageText dmgText;
 
+    [Header("--- Score, Coin ---")]
     public TextMeshProUGUI scoreText;
-
-    [Header(" ---- Coin, Dia ----- ")]
     public GameObject coin;
     public GameObject diamond;
     private int curScore = 0;
+
+    [Header("---- Hp -----")]
+    public Image[] heartImages;
+    public Sprite fullHeart;
+    public Sprite emptyHeart;
+    public GameObject bossHpObj;
+    public Image bossHpImg;
 
     [Header("---- Setting -----")]
     public Button settingBtn;
@@ -27,31 +34,20 @@ public class InGameUI : MonoBehaviour
     public Toggle sound_Toggle;
     public Slider sound_Slider;
 
-    [Header("---- Store -----")]
-    public Button storeBtn;
-    public GameObject storePanel;
-    public Text coinText;
-
-
     [Header("---- GameOver -----")]
     public GameObject gameOverPanel;
-    public GameObject tobBarPanel;
+    public GameObject topBarPanel;
     public GameObject controlPanel;
     public Button replayBtn;
-    // public Button gameExitBtn;
+    public Button goTitleBtn;
     public Text titleText;
-
-    [Header("---- Skill Cool Timer -----")]
-    public GameObject skCoolPrefab;
-    public Transform skCoolRoot;
-    public SkInvenNode[] skInvenNode;
 
     void Awake()
     {
         if (!instance)
         {
             instance = this;
-            DontDestroyOnLoad(this.gameObject);
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -62,9 +58,8 @@ public class InGameUI : MonoBehaviour
     void Start()
     {
         settingPanel.SetActive(false);
-        storePanel.SetActive(false);
         gameOverPanel.SetActive(false);
-        tobBarPanel.SetActive(true);
+        topBarPanel.SetActive(true);
         controlPanel.SetActive(true);
 
         InitRefreshUI();
@@ -79,17 +74,22 @@ public class InGameUI : MonoBehaviour
         if (scoreText != null)
             scoreText.text = GlobalValue.g_UserGold.ToString();
 
-        // if (hpBarImg != null)
-        //     hpBarImg.fillAmount = PlayerCtrl.hp / PlayerCtrl.initHp;
+        UpdateHeart();
+    }
 
-        // for (int i = 0; i < StoreBox.skill.Length; i++)
-        // {
-        //     if (skInvenNode.Length <= i || skInvenNode[i] == null)
-        //         return;
-
-        //     skInvenNode[i].skType = (SkillType)i;
-        //     skInvenNode[i].skCountText.text = StoreBox.skill[i].ToString();
-        // }
+    public void UpdateHeart()
+    {
+        for (int i = 0; i < heartImages.Length; i++)
+        {
+            if (i < PlayerCtrl.instance.currentHp)
+            {
+                heartImages[i].sprite = fullHeart;
+            }
+            else
+            {
+                heartImages[i].sprite = emptyHeart;
+            }
+        }
     }
 
     private void InitSoundUI()
@@ -136,12 +136,11 @@ public class InGameUI : MonoBehaviour
 
         GameObject dmgObject = Instantiate(damageRoot);
         dmgObject.transform.SetParent(damageCanvas);
-        dmgText = dmgObject.GetComponent<DmgTextCtrl>();
+        dmgText = dmgObject.GetComponent<DamageText>();
         if (dmgText != null)
             dmgText.InitDamage(value, color);
         stCacPos = new Vector3(position.x, position.y + 1.4f, 0.0f);
         dmgObject.transform.position = stCacPos;
-
     }
 
     public void SpawnCoin(Vector3 position)
@@ -187,7 +186,7 @@ public class InGameUI : MonoBehaviour
     private void GameEndPanelUI()
     {
         gameOverPanel.SetActive(true);
-        tobBarPanel.SetActive(false);
+        topBarPanel.SetActive(false);
         controlPanel.SetActive(false);
 
         if (replayBtn != null)
@@ -199,9 +198,9 @@ public class InGameUI : MonoBehaviour
             });
         }
 
-        if (gameExitBtn != null)
+        if (goTitleBtn != null)
         {
-            gameExitBtn.onClick.AddListener(() =>
+            goTitleBtn.onClick.AddListener(() =>
             {
                 SceneManager.LoadScene("TitleScene");
             });

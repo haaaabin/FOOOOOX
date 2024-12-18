@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class TitleMgr : MonoBehaviour
+public class OutGameUI : MonoBehaviour
 {
     public Button startGameBtn;
     public Button gameDescriptionBtn;

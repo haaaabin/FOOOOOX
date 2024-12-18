@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class DmgTextCtrl : MonoBehaviour
+public class DamageText : MonoBehaviour
 {
-    public Text childText = null; 
+    public Text childText = null;
     private Vector3 curPos;
-    private Color color; 
-    private float effectTime = 0.0f; 
+    private Color color;
+    private float effectTime = 0.0f;
     private float mvVelocity = 1.1f / 1.05f;
     private float apVelocity = 1.0f / (1.0f - 0.4f);
 
@@ -14,14 +14,14 @@ public class DmgTextCtrl : MonoBehaviour
     {
         effectTime += Time.deltaTime;
 
-        if(effectTime < 1.05f)
+        if (effectTime < 1.05f)
         {
             curPos = childText.transform.position;
             curPos.y += Time.deltaTime * mvVelocity;
             childText.transform.position = curPos;
         }
 
-        if(0.4f < effectTime)  
+        if (0.4f < effectTime)
         {
             color = childText.color;
             color.a -= (Time.deltaTime * apVelocity);
@@ -38,8 +38,8 @@ public class DmgTextCtrl : MonoBehaviour
     {
         if (childText == null)
             childText = this.GetComponentInChildren<Text>();
-    
-        if(damage <= 0.0f)
+
+        if (damage <= 0.0f)
         {
             int dmgNum = (int)Mathf.Abs(damage);
             childText.text = "- " + dmgNum;

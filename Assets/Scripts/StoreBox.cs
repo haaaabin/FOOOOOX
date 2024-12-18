@@ -24,8 +24,6 @@ public class StoreBox : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
-        GlobalValue.LoadGameData();
-
         if (lifeBuyBtn != null)
             lifeBuyBtn.onClick.AddListener(() => BuyItem(SkillType.Skill_0));
 
@@ -43,8 +41,6 @@ public class StoreBox : MonoBehaviour
     {
         if (coinText != null)
             coinText.text = GlobalValue.g_UserGold.ToString();
-
-        GameMgr.Instance.RefreshSkill();
     }
 
     private void BuyItem(SkillType skillType)

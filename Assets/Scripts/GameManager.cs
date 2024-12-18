@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,7 +7,7 @@ public class GameManager : MonoBehaviour
     [HideInInspector] public SkillType skillType = SkillType.SkCount;
    
     public enum GameState { Level1, Boss, GameOver, Ending }
-    public GameState gameState;
+    [HideInInspector] public GameState gameState;
 
     public static GameManager Instance()
     {
