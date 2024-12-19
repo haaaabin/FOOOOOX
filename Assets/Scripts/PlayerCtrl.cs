@@ -217,11 +217,6 @@ public class PlayerCtrl : MonoBehaviour
             TakeDamage(1, coll.transform.position);
         }
 
-        if (coll.gameObject.layer == LayerMask.NameToLayer("Ball"))
-        {
-            TakeDamage(1, coll.transform.position);
-        }
-
         if (coll.gameObject.name.Contains("DieZone"))
         {
             Die();
