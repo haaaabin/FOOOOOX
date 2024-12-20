@@ -42,6 +42,8 @@ public class InGameUI : MonoBehaviour
     public Button goTitleBtn;
     public Text titleText;
 
+    public Image fadePanel;
+    private float fadeDuration = 2f;
     void Awake()
     {
         if (!instance)
@@ -217,5 +219,45 @@ public class InGameUI : MonoBehaviour
 
         titleText.text = "GAME ENDING !";
         GameEndPanelUI();
+    }
+    private IEnumerator FadeScreen(float targetAlpha)
+    {
+        Debug.Log($"FadeScreen started: TargetAlpha = {targetAlpha}");
+        float startAlpha = fadePanel.color.a;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < fadeDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float newAlpha = Mathf.Lerp(startAlpha, targetAlpha, elapsedTime / fadeDuration);
+            fadePanel.color = new Color(0, 0, 0, newAlpha);
+            yield return null;
+        }
+
+        fadePanel.color = new Color(0, 0, 0, targetAlpha);
+    }
+
+    public void ChangeScene()
+    {
+        StartCoroutine(ChangeBossScene());
+    }
+    public IEnumerator ChangeBossScene()
+    {
+        yield return FadeScreen(1f);
+        AsyncOperation bossSceneLoad = SceneManager.LoadSceneAsync("BossScene");
+        bossSceneLoad.allowSceneActivation = false;
+        AsyncOperation gameUISceneLoad = SceneManager.LoadSceneAsync("GameUIScene", LoadSceneMode.Additive);
+        gameUISceneLoad.allowSceneActivation = false;
+        while (!bossSceneLoad.isDone || !gameUISceneLoad.isDone)
+        {
+            if (bossSceneLoad.progress >= 0.9f || gameUISceneLoad.progress >= 0.9f)
+            {
+                bossSceneLoad.allowSceneActivation = true;
+                gameUISceneLoad.allowSceneActivation = true;
+                PlayerCtrl.Instance.transform.position = new Vector2(-3, -3);
+                yield return FadeScreen(0f);
+            }
+            yield return null;
+        }
     }
 }
