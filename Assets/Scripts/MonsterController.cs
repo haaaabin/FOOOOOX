@@ -3,9 +3,10 @@ using UnityEngine.UI;
 
 public enum BossState
 {
-    Boss_Move,
-    Boss_Attack,
-    Fall_Bull
+    Idle,
+    Move,
+    Attack,
+    FallingBall
 }
 
 public enum MonType
@@ -20,7 +21,7 @@ public enum MonType
 
 public class MonsterController : MonoBehaviour
 {
-    public MonType monType = MonType.Walk_Monster;
+    public MonType monType;
 
     private Rigidbody2D rigid;
     private SpriteRenderer sprite;
@@ -29,10 +30,10 @@ public class MonsterController : MonoBehaviour
     private float runSpeed = 5;
 
     //hpBar
-    public GameObject hpBarObj = null;
-    public Image hpBarImg = null;
-    private float hp = 100;
-    [HideInInspector] public float curHp = 100;
+    public GameObject monHpBar = null;
+    public Image monHpBarImg = null;
+    private float maxHp = 100;
+    [HideInInspector] public float curHp;
 
     //--- Monster
     public int turn = 1;
@@ -46,11 +47,9 @@ public class MonsterController : MonoBehaviour
     public GameObject trunkMonShootPos = null;
 
     [Header("--- Boss --- ")]
-    private BossState bossState = BossState.Boss_Move;
+    private BossState bossState = BossState.Move;
     private int shootCount = 0;
 
-    public GameObject bossHpBarObj = null;
-    public Image bossHpBarImg = null;
     public GameObject bossBullet = null;
     public float bossBulletSpeed = 15.0f;
     public GameObject bossShootPos = null;
@@ -75,13 +74,14 @@ public class MonsterController : MonoBehaviour
         switch (monType)
         {
             case MonType.Walk_Monster:
-                SetInitialHp(50.0f);
+                SetInitHp(50.0f);
                 break;
             case MonType.Attack_Monster:
-                SetInitialHp(200.0f);
+                SetInitHp(200.0f);
                 break;
             case MonType.Boss:
-                SetInitialHp(5000.0f);
+                SetInitHp(10000.0f);
+                bossState = BossState.Idle;
                 break;
         }
     }
@@ -99,11 +99,11 @@ public class MonsterController : MonoBehaviour
                     MoveMonster(turn, runSpeed);
                     break;
                 case MonType.Plant_Monster:
-                    HandleAttackMonster(plantMonBullet, plantMonShootPos, Vector2.left, Vector2.right, 14, 10, shootDelay);
+                    AttackMonster(plantMonBullet, plantMonShootPos, Vector2.left, Vector2.right, 14, 10, shootDelay);
                     break;
                 case MonType.Attack_Monster:
                     MoveMonster(turn, moveSpeed);
-                    HandleAttackMonster(trunkMonBullet, trunkMonShootPos, Vector2.left, Vector2.right, 20, 6, 0.55f);
+                    AttackMonster(trunkMonBullet, trunkMonShootPos, Vector2.left, Vector2.right, 20, 6, 0.55f);
                     break;
                 case MonType.Snail_Monster:
                     MoveMonster(turn, isChange ? 7 : moveSpeed);
@@ -114,32 +114,37 @@ public class MonsterController : MonoBehaviour
             }
         }
     }
-    private void SetInitialHp(float hp)
+
+    private void SetInitHp(float hp)
     {
-        this.hp = hp;
-        curHp = this.hp;
+        this.maxHp = hp;
+        curHp = this.maxHp;
     }
 
     private void MoveMonster(int direction, float speed)
     {
-        rigid.velocity = new Vector3(direction * speed, rigid.velocity.y);
+        rigid.velocity = new Vector2(direction * speed, rigid.velocity.y);
         CheckPlatform();
     }
 
     private void CheckPlatform()
     {
         Vector2 frontVec = new Vector2(rigid.position.x + turn, rigid.position.y - 0.8f);
-        Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
+        Debug.DrawRay(frontVec, Vector2.down, new Color(0, 1, 0));
         RaycastHit2D rayGHit = Physics2D.Raycast(frontVec, Vector2.down, 1, LayerMask.GetMask("Platform"));
+
+        // 방향 전환
         if (rayGHit.collider == null)
         {
             turn *= -1;
         }
+
+        // sprite 전환
         if (turn != 0)
             sprite.flipX = turn == 1;
     }
 
-    private void HandleAttackMonster(GameObject bulletPrefab, GameObject shootPos, Vector2 leftDirection, Vector2 rightDirection, float boxWidth, float boxHeight, float attackDelay)
+    private void AttackMonster(GameObject bulletPrefab, GameObject shootPos, Vector2 leftDirection, Vector2 rightDirection, float boxWidth, float boxHeight, float attackDelay)
     {
         Collider2D coll = Physics2D.OverlapBox(transform.position, new Vector2(boxWidth, boxHeight), 0, LayerMask.GetMask("Player"));
         if (coll != null)
@@ -170,27 +175,34 @@ public class MonsterController : MonoBehaviour
 
     private void Boss_AI()
     {
-        Collider2D a_Coll = Physics2D.OverlapBox(transform.position, new Vector2(20, 20), 0, LayerMask.GetMask("Player"));
-        if (a_Coll != null && bossHpBarObj != null)
+        Collider2D coll = Physics2D.OverlapBox(transform.position, new Vector2(25, 25), 0, LayerMask.GetMask("Player"));
+        if (coll != null && InGameUI.instance.bossHpBar != null)
         {
-            bossHpBarObj.SetActive(true);
+            InGameUI.instance.bossHpBar.SetActive(true);
+            if (bossState == BossState.Idle)
+            {
+                bossState = BossState.Move;
+            }
         }
 
         switch (bossState)
         {
-            case BossState.Boss_Move:
-                BossMove();
+            case BossState.Idle:
+                rigid.velocity = Vector2.zero;
                 break;
-            case BossState.Fall_Bull:
-                BossFallBull();
+            case BossState.Move:
+                Move();
                 break;
-            case BossState.Boss_Attack:
-                BossAttack();
+            case BossState.FallingBall:
+                FallingBall();
+                break;
+            case BossState.Attack:
+                Attack();
                 break;
         }
     }
 
-    private void BossMove()
+    private void Move()
     {
         MoveBoss(-turn * 4);
         delayTime -= Time.deltaTime;
@@ -198,11 +210,11 @@ public class MonsterController : MonoBehaviour
         {
             delayTime = 1f;
             shootTime = 0.5f;
-            bossState = BossState.Fall_Bull;
+            bossState = BossState.FallingBall;
         }
     }
 
-    private void BossFallBull()
+    private void FallingBall()
     {
         delayTime -= Time.deltaTime;
         if (delayTime <= 0.0f)
@@ -212,33 +224,28 @@ public class MonsterController : MonoBehaviour
             shootTime -= Time.deltaTime;
             if (shootTime <= 0.0f)
             {
-                DropFallingBalls();
+                GameObject ballPrefabObj = Instantiate(bulletObj);
+                int dropPosX = Random.Range(23, 38);
+                ballPrefabObj.transform.position = new Vector3(dropPosX, 6.2f, 0.0f);
+
+                fallCount++;
+                if (fallCount < 14)
+                {
+                    shootTime = 0.5f;
+                }
+                else
+                {
+                    fallCount = 0;
+                    shootTime = 0.5f;
+                    delayTime = 1;
+                    bossState = BossState.Attack;
+                }
+                SoundManager.Instance.PlayGUISound("Fall", 1.2f);
             }
         }
     }
 
-    private void DropFallingBalls()
-    {
-        GameObject ballPrefabObj = Instantiate(bulletObj);
-        int dropPosX = Random.Range(23, 38);
-        ballPrefabObj.transform.position = new Vector3(dropPosX, 6.2f, 0.0f);
-
-        fallCount++;
-        if (fallCount < 14)
-        {
-            shootTime = 0.5f;
-        }
-        else
-        {
-            fallCount = 0;
-            shootTime = 0.5f;
-            delayTime = 1;
-            bossState = BossState.Boss_Attack;
-        }
-        SoundManager.Instance.PlayGUISound("Fall", 1.2f);
-    }
-
-    private void BossAttack()
+    private void Attack()
     {
         delayTime -= Time.deltaTime;
         if (delayTime <= 0.0f)
@@ -259,7 +266,7 @@ public class MonsterController : MonoBehaviour
         for (int i = 0; i < 2; i++)
         {
             GameObject bossBulletObj = Instantiate(bossBullet);
-            Vector3 bulletPos = bossBullet.transform.position;
+            Vector3 bulletPos = bossShootPos.transform.position;
             bulletPos.y -= 0.4f - (i * 1.2f);
             bossBulletObj.transform.position = bulletPos;
 
@@ -278,7 +285,7 @@ public class MonsterController : MonoBehaviour
             anim.SetBool("Attack", false);
             shootCount = 0;
             delayTime = 10.0f;
-            bossState = BossState.Boss_Move;
+            bossState = BossState.Move;
         }
     }
 
@@ -331,12 +338,12 @@ public class MonsterController : MonoBehaviour
 
         curHp -= value;
 
-        if (hpBarObj != null)
+        if (monHpBar != null)
         {
-            hpBarObj.SetActive(true);
-            if (hpBarImg != null)
+            monHpBar.SetActive(true);
+            if (monHpBarImg != null)
             {
-                hpBarImg.fillAmount = curHp / hp;
+                monHpBarImg.fillAmount = curHp / maxHp;
             }
         }
 
@@ -352,7 +359,7 @@ public class MonsterController : MonoBehaviour
             {
                 anim.SetTrigger("ShellHit");
                 curHp = 0.0f;
-                GameMgr.Instance.SpawnCoin(transform.position);
+                InGameUI.instance.SpawnCoin(transform.position);
                 MonsterDie();
             }
         }
@@ -361,8 +368,9 @@ public class MonsterController : MonoBehaviour
             if (curHp <= 0.0f)
             {
                 curHp = 0.0f;
-                if (hpBarObj != null) hpBarObj.SetActive(false);
-                GameMgr.Instance.SpawnCoin(transform.position);
+                if (monHpBar != null)
+                    monHpBar.SetActive(false);
+                InGameUI.instance.SpawnCoin(transform.position);
                 MonsterDie();
             }
         }
@@ -374,15 +382,16 @@ public class MonsterController : MonoBehaviour
             return;
 
         curHp -= a_Value;
-        if (bossHpBarImg != null)
-            bossHpBarImg.fillAmount = curHp / hp;
+        if (InGameUI.instance.bossHpImg != null)
+            InGameUI.instance.bossHpImg.fillAmount = curHp / maxHp;
 
         if (curHp <= 0.0f)
         {
             curHp = 0.0f;
-            if (bossHpBarObj != null) bossHpBarObj.SetActive(false);
+            if (InGameUI.instance.bossHpBar != null)
+                InGameUI.instance.bossHpBar.SetActive(false);
             MonsterDie();
-            GameMgr.Instance.SpawnDiamond(transform.position);
+            InGameUI.instance.SpawnDiamond(transform.position);
         }
     }
 

@@ -4,8 +4,9 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     private static GameManager instance;
+
     [HideInInspector] public SkillType skillType = SkillType.SkCount;
-   
+
     public enum GameState { Level1, Boss, GameOver, Ending }
     [HideInInspector] public GameState gameState;
 
@@ -21,9 +22,13 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        if (instance != null)
-            Destroy(instance);
-        instance = this;
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(this.gameObject);
+        }
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private void Start()
@@ -41,42 +46,26 @@ public class GameManager : MonoBehaviour
         }
 
         gameState = GameState.Level1;
+
     }
 
-
-    private void Update()
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (!(gameState == GameState.GameOver))
+        if (scene.name == "TitleScene")
         {
-            // if (Input.GetKeyDown(KeyCode.Alpha1) ||
-            //     Input.GetKeyDown(KeyCode.Keypad1))
-            // {
-            //     UseSkill_Key(SkillType.Skill_0);
-            // }
-            // else if (Input.GetKeyDown(KeyCode.Alpha2) ||
-            //     Input.GetKeyDown(KeyCode.Keypad2))
-            // {
-            //     UseSkill_Key(SkillType.Skill_1);
-            // }
+            InGameUI.instance.SetUIActive(false);
+            PlayerCtrl.Instance.SetPlayerActive(false);
+        }
+        else
+        {
+            InGameUI.instance.SetUIActive(true);
+            PlayerCtrl.Instance.SetPlayerActive(true);
         }
     }
 
-    public void GameExit()
+    void OnDestroy()
     {
-        SceneManager.LoadScene("TitleScene");
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
-
-    // public void UseSkill_Key(SkillType skType)
-    // {
-    //     if (GlobalValue.g_skillCount[(int)skType] <= 0)
-    //         return;
-
-    //     PlayerCtrl.instance.UseSkill_Item(skType);
-
-    //     if ((int)skType < skInvenNode.Length)
-    //         skInvenNode[(int)skType].skCountText.text =
-    //                     GlobalValue.g_skillCount[(int)skType].ToString();
-
-    // }
 
 }

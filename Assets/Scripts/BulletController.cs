@@ -3,8 +3,9 @@ using UnityEngine;
 public class BulletController : MonoBehaviour
 {
     private Vector3 direction = Vector3.right;
-    private float moveSpeed = 10.0f;
-    private float lifeTime = 1f; // 기본 수명
+    private float moveSpeed;
+    private float lifeTime;
+    private float rotationSpeed = 360f;
 
     private void Start()
     {
@@ -14,6 +15,8 @@ public class BulletController : MonoBehaviour
     private void Update()
     {
         transform.position += direction * Time.deltaTime * moveSpeed;
+
+        transform.Rotate(Vector3.forward * Time.deltaTime * rotationSpeed);
     }
 
     private void OnCollisionEnter2D(Collision2D coll)
@@ -24,7 +27,7 @@ public class BulletController : MonoBehaviour
         }
     }
     
-    public void InitializeBullet(Vector3 startPos, Vector3 dir, float speed, float bulletLifeTime = 0.7f)
+    public void InitializeBullet(Vector3 startPos, Vector3 dir, float speed, float bulletLifeTime = 1f)
     {
         direction = dir;
         transform.position = new Vector3(startPos.x, startPos.y, 0.0f);

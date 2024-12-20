@@ -3,10 +3,16 @@ using UnityEngine.SceneManagement;
 
 public class CamCtrl : MonoBehaviour
 {
-    public Transform target;
+    private Transform target;
     public Vector2 minCameraBoundary;
     public Vector2 maxCameraBoundary;
     public float speed;
+
+    void Start()
+    {
+        PlayerCtrl player = FindObjectOfType<PlayerCtrl>();
+        target = player.transform;
+    }
 
     private void LateUpdate()
     {

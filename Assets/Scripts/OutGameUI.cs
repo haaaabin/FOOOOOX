@@ -4,42 +4,32 @@ using UnityEngine.UI;
 
 public class OutGameUI : MonoBehaviour
 {
-    public Button startGameBtn;
-    public Button gameDescriptionBtn;
-    public Button gameEndBtn;
-
-    public GameObject descriptionPanel;
-    public Button exitBtn;
+    public Button gameStartBtn;
+    public Button gameQuitBtn;
 
     private void Start()
     {
-        if (startGameBtn != null)
+        if (gameStartBtn != null)
         {
-            startGameBtn.onClick.AddListener(() =>
+            gameStartBtn.onClick.AddListener(() =>
             {
+                PlayerCtrl player = PlayerCtrl.Instance;
+                if (player != null)
+                    player.InIt();
+                InGameUI inGameUI = InGameUI.instance;
+                if (inGameUI != null)
+                {
+                    inGameUI.InitRefreshUI();
+                    inGameUI.InitSoundUI();
+                }
                 SceneManager.LoadScene("Level1");
                 SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
             });
         }
 
-        if (gameDescriptionBtn != null)
+        if (gameQuitBtn != null)
         {
-            gameDescriptionBtn.onClick.AddListener(() =>
-            {
-                if (descriptionPanel != null)
-                    descriptionPanel.SetActive(true);
-
-                if (exitBtn != null)
-                    exitBtn.onClick.AddListener(() =>
-                    {
-                        descriptionPanel.SetActive(false);
-                    });
-            });
-        }
-
-        if (gameEndBtn != null)
-        {
-            gameEndBtn.onClick.AddListener(() =>
+            gameQuitBtn.onClick.AddListener(() =>
             {
                 Application.Quit();
             });

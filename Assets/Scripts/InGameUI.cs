@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using Unity.VisualScripting;
+using System.Collections;
 
 public class InGameUI : MonoBehaviour
 {
@@ -18,13 +18,12 @@ public class InGameUI : MonoBehaviour
     public TextMeshProUGUI scoreText;
     public GameObject coin;
     public GameObject diamond;
-    private int curScore = 0;
 
     [Header("---- Hp -----")]
     public Image[] heartImages;
     public Sprite fullHeart;
     public Sprite emptyHeart;
-    public GameObject bossHpObj;
+    public GameObject bossHpBar;
     public Image bossHpImg;
 
     [Header("---- Setting -----")]
@@ -44,6 +43,7 @@ public class InGameUI : MonoBehaviour
 
     public Image fadePanel;
     private float fadeDuration = 2f;
+
     void Awake()
     {
         if (!instance)
@@ -59,23 +59,21 @@ public class InGameUI : MonoBehaviour
 
     void Start()
     {
-        settingPanel.SetActive(false);
-        gameOverPanel.SetActive(false);
-        topBarPanel.SetActive(true);
-        controlPanel.SetActive(true);
-
         InitRefreshUI();
         InitSoundUI();
     }
 
-    private void InitRefreshUI()
+    public void InitRefreshUI()
     {
-        if (GlobalValue.g_UserGold <= 0)
-            GlobalValue.g_UserGold = 0;
+        settingPanel.SetActive(false);
+        gameOverPanel.SetActive(false);
+        topBarPanel.SetActive(true);
+        controlPanel.SetActive(true);
+        bossHpBar.SetActive(false);
 
+        PlayerCtrl.Instance.score = 0;
         if (scoreText != null)
-            scoreText.text = GlobalValue.g_UserGold.ToString();
-
+            scoreText.text = PlayerCtrl.Instance.score.ToString();
         UpdateHeart();
     }
 
@@ -83,7 +81,7 @@ public class InGameUI : MonoBehaviour
     {
         for (int i = 0; i < heartImages.Length; i++)
         {
-            if (i < PlayerCtrl.instance.currentHp)
+            if (i < PlayerCtrl.Instance.currentHp)
             {
                 heartImages[i].sprite = fullHeart;
             }
@@ -94,7 +92,7 @@ public class InGameUI : MonoBehaviour
         }
     }
 
-    private void InitSoundUI()
+    public void InitSoundUI()
     {
         if (sound_Toggle != null)
         {
@@ -167,13 +165,13 @@ public class InGameUI : MonoBehaviour
 
     public void AddScore(int value = 50)
     {
-        if (curScore < 0)
-            curScore = 0;
+        if (PlayerCtrl.Instance.score < 0)
+            PlayerCtrl.Instance.score = 0;
 
-        curScore += value;
-        scoreText.text = curScore.ToString();
+        PlayerCtrl.Instance.score += value;
+        scoreText.text = PlayerCtrl.Instance.score.ToString();
 
-        GlobalValue.g_UserGold += curScore;
+        GlobalValue.g_UserGold += PlayerCtrl.Instance.score;
         PlayerPrefs.SetInt("UserScore", GlobalValue.g_UserGold);
     }
 
@@ -195,6 +193,10 @@ public class InGameUI : MonoBehaviour
         {
             replayBtn.onClick.AddListener(() =>
             {
+                PlayerCtrl.Instance.InIt();
+                InitRefreshUI();
+                InitSoundUI();
+
                 SceneManager.LoadScene("Level1");
                 SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
             });
@@ -220,6 +222,12 @@ public class InGameUI : MonoBehaviour
         titleText.text = "GAME ENDING !";
         GameEndPanelUI();
     }
+
+    public void SetUIActive(bool isActive)
+    {
+        gameObject.SetActive(isActive);
+    }
+
     private IEnumerator FadeScreen(float targetAlpha)
     {
         Debug.Log($"FadeScreen started: TargetAlpha = {targetAlpha}");

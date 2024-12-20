@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public enum MovementState
 {
@@ -11,15 +10,16 @@ public enum MovementState
 
 public class PlayerCtrl : MonoBehaviour
 {
-    public static PlayerCtrl instance;
-    public static MovementState state = MovementState.idle;
+    public static PlayerCtrl Instance { get; private set; }
+
+    public MovementState state;
     private Rigidbody2D rb;
     private Animator anim;
     private CapsuleCollider2D playerColl;
     private SpriteRenderer sprite;
     private float dirX = 0.0f;
     private float moveSpeed = 5f;
-    private float jumpPower = 10.0f;
+    private float jumpPower = 15.0f;
     private float inputX = 0f;
     private bool isJumping = false;
 
@@ -27,30 +27,35 @@ public class PlayerCtrl : MonoBehaviour
     public GameObject shootPos;
     private float bulletSpeed = 10.0f;
     public int maxHp = 5;
-    public int currentHp;
+    public int currentHp = 0;
+    public int score;
 
     private LayerMask groundMask = -1;
     private bool isDie = false;
 
     private void Awake()
     {
-        if (instance == null)
+        if (Instance != null && Instance != this)
         {
-            instance = this;
+            Destroy(gameObject);
+            return;
         }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
     private void Start()
     {
+
         Time.timeScale = 1;
-        currentHp = maxHp;
 
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         playerColl = GetComponent<CapsuleCollider2D>();
         sprite = GetComponent<SpriteRenderer>();
         groundMask = LayerMask.GetMask("Platform", "AirPlatform");
-        isDie = false;
+
+        InIt();
     }
 
     private void Update()
@@ -59,9 +64,24 @@ public class PlayerCtrl : MonoBehaviour
             return;
 
         MoveUpdateAnim();
-        HandleInput();
-        UpdateAnimState();
+        // HandleInput();
+        // UpdateAnimState();
         LimitMove();
+    }
+
+    public void InIt()
+    {
+        isDie = false;
+        currentHp = maxHp;
+        score = 0;
+        transform.position = new Vector2(-3, -3);
+        sprite.color = new Color(1, 1, 1, 1);
+        sprite.flipX = false;
+
+        state = MovementState.idle;
+        anim.ResetTrigger("Die");
+        anim.SetInteger("state", 0);
+        anim.Play("Player-Idle");
     }
 
     private void MoveUpdateAnim()
@@ -235,8 +255,7 @@ public class PlayerCtrl : MonoBehaviour
         {
             GameManager.Instance().gameState = GameManager.GameState.Boss;
             PlayerPrefs.SetFloat("Hp", GlobalValue.g_Hp);
-            SceneManager.LoadScene("BossScene");
-            SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
+            InGameUI.instance.ChangeScene();
         }
 
         else if (coll.gameObject.name.Contains("Wall"))
@@ -268,18 +287,18 @@ public class PlayerCtrl : MonoBehaviour
         mon.MonsterTakeDamage();
     }
 
-    private void TakeDamage(int damage, Vector2 position)
+    public void TakeDamage(int damage, Vector2 position)
     {
         currentHp -= damage;
         InGameUI.instance.UpdateHeart();
+        SoundManager.Instance.PlayGUISound("Hit", 1.0f);
+        InGameUI.instance.DamageText(-damage, transform.position, Color.blue);
 
         if (currentHp <= 0)
         {
             Die();
+            return;
         }
-
-        SoundManager.Instance.PlayGUISound("Hit", 1.0f);
-        InGameUI.instance.DamageText(-damage, transform.position, Color.blue);
 
         // 넉백 효과
         gameObject.layer = 10;
@@ -292,6 +311,7 @@ public class PlayerCtrl : MonoBehaviour
 
     private void Die()
     {
+        rb.velocity = Vector2.zero;
         isDie = true;
         anim.SetTrigger("Die");
         InGameUI.instance.GameOver();
@@ -309,5 +329,10 @@ public class PlayerCtrl : MonoBehaviour
     {
         gameObject.layer = 6;
         sprite.color = new Color(1, 1, 1, 1);
+    }
+
+    public void SetPlayerActive(bool isActive)
+    {
+        gameObject.SetActive(isActive);
     }
 }
