@@ -7,6 +7,7 @@ public class CamCtrl : MonoBehaviour
     public Vector2 minCameraBoundary;
     public Vector2 maxCameraBoundary;
     public float speed;
+    private Vector3 targetPos;
 
     void Start()
     {
@@ -16,8 +17,6 @@ public class CamCtrl : MonoBehaviour
 
     private void LateUpdate()
     {
-        Vector3 targetPos = new Vector3(target.position.x + 3f, target.position.y + 1.5f, this.transform.position.z);
-
         if (SceneManager.GetActiveScene().name == "BossScene")
         {
             targetPos = new Vector3(target.position.x, 0, this.transform.position.z);
