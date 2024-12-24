@@ -49,21 +49,38 @@ public class InGameUI : MonoBehaviour
         if (!instance)
         {
             instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
         }
     }
 
     void Start()
     {
-        InitRefreshUI();
-        InitSoundUI();
-    }
+        InitUI();
 
-    public void InitRefreshUI()
+        if (gameExitBtn != null)
+        {
+            gameExitBtn.onClick.AddListener(() =>
+            {
+                SceneManager.LoadScene("TitleScene");
+            });
+        }
+
+        if (replayBtn != null)
+        {
+            replayBtn.onClick.AddListener(() =>
+            {
+                GameManager.Instance().ReplayGame();
+            });
+        }
+
+        if (goTitleBtn != null)
+        {
+            goTitleBtn.onClick.AddListener(() =>
+            {
+                SceneManager.LoadScene("TitleScene");
+            });
+        }
+    }
+    public void InitUI()
     {
         settingPanel.SetActive(false);
         gameOverPanel.SetActive(false);
@@ -71,10 +88,11 @@ public class InGameUI : MonoBehaviour
         controlPanel.SetActive(true);
         bossHpBar.SetActive(false);
 
-        PlayerCtrl.Instance.score = 0;
         if (scoreText != null)
             scoreText.text = PlayerCtrl.Instance.score.ToString();
+
         UpdateHeart();
+        InitSoundUI();
     }
 
     public void UpdateHeart()
@@ -131,8 +149,10 @@ public class InGameUI : MonoBehaviour
 
     public void DamageText(float value, Vector3 position, Color color)
     {
-        if (damageCanvas == null || damageRoot == null)
-            return;
+        if (damageCanvas == null)
+        {
+            damageCanvas = GameObject.Find("Damage_Canvas").transform;
+        }
 
         GameObject dmgObject = Instantiate(damageRoot);
         dmgObject.transform.SetParent(damageCanvas);
@@ -163,74 +183,15 @@ public class InGameUI : MonoBehaviour
         Destroy(diamondObject, 10);
     }
 
-    public void AddScore(int value = 50)
-    {
-        if (PlayerCtrl.Instance.score < 0)
-            PlayerCtrl.Instance.score = 0;
-
-        PlayerCtrl.Instance.score += value;
-        scoreText.text = PlayerCtrl.Instance.score.ToString();
-
-        GlobalValue.g_UserGold += PlayerCtrl.Instance.score;
-        PlayerPrefs.SetInt("UserScore", GlobalValue.g_UserGold);
-    }
-
-    public void GameOver()
-    {
-        GameManager.Instance().gameState = GameManager.GameState.GameOver;
-        Time.timeScale = 0.0f;
-        PlayerPrefs.DeleteAll();
-        GameEndPanelUI();
-    }
-
-    private void GameEndPanelUI()
+    public void GameEndPanelUI()
     {
         gameOverPanel.SetActive(true);
         topBarPanel.SetActive(false);
         controlPanel.SetActive(false);
-
-        if (replayBtn != null)
-        {
-            replayBtn.onClick.AddListener(() =>
-            {
-                PlayerCtrl.Instance.InIt();
-                InitRefreshUI();
-                InitSoundUI();
-
-                SceneManager.LoadScene("Level1");
-                SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
-            });
-        }
-
-        if (goTitleBtn != null)
-        {
-            goTitleBtn.onClick.AddListener(() =>
-            {
-                SceneManager.LoadScene("TitleScene");
-            });
-        }
-    }
-
-    public void GameEnding()
-    {
-        GameManager.Instance().gameState = GameManager.GameState.Ending;
-
-        Time.timeScale = 0.0f;
-
-        PlayerPrefs.DeleteAll();
-
-        titleText.text = "GAME ENDING !";
-        GameEndPanelUI();
-    }
-
-    public void SetUIActive(bool isActive)
-    {
-        gameObject.SetActive(isActive);
     }
 
     private IEnumerator FadeScreen(float targetAlpha)
     {
-        Debug.Log($"FadeScreen started: TargetAlpha = {targetAlpha}");
         float startAlpha = fadePanel.color.a;
         float elapsedTime = 0f;
 
@@ -249,6 +210,7 @@ public class InGameUI : MonoBehaviour
     {
         StartCoroutine(ChangeBossScene());
     }
+
     public IEnumerator ChangeBossScene()
     {
         yield return FadeScreen(1f);

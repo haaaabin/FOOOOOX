@@ -318,16 +318,8 @@ public class MonsterController : MonoBehaviour
             }
             if (monType == MonType.Boss)
             {
-                BossTakeDemaged();
+                BossTakeDameged();
                 OnDamaged();
-            }
-        }
-
-        if (coll.gameObject.tag == "Shield")
-        {
-            if (coll.gameObject.layer == LayerMask.NameToLayer("Monster"))
-            {
-                MonsterDie();
             }
         }
     }
@@ -376,7 +368,7 @@ public class MonsterController : MonoBehaviour
         }
     }
 
-    private void BossTakeDemaged(float a_Value = 50)
+    private void BossTakeDameged(float a_Value = 50)
     {
         if (curHp <= 0.0f)
             return;

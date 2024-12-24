@@ -1,4 +1,6 @@
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum MovementState
 {
@@ -15,7 +17,7 @@ public class PlayerCtrl : MonoBehaviour
     public MovementState state;
     private Rigidbody2D rb;
     private Animator anim;
-    private CapsuleCollider2D playerColl;
+    private CapsuleCollider2D coll;
     private SpriteRenderer sprite;
     private float dirX = 0.0f;
     private float moveSpeed = 5f;
@@ -26,9 +28,9 @@ public class PlayerCtrl : MonoBehaviour
     public GameObject bullet;
     public GameObject shootPos;
     private float bulletSpeed = 10.0f;
-    public int maxHp = 5;
-    public int currentHp = 0;
-    public int score;
+    [HideInInspector] public int maxHp = 5;
+    [HideInInspector] public int currentHp = 5;
+    [HideInInspector] public int score = 0;
 
     private LayerMask groundMask = -1;
     private bool isDie = false;
@@ -41,20 +43,17 @@ public class PlayerCtrl : MonoBehaviour
             return;
         }
         Instance = this;
-        DontDestroyOnLoad(gameObject);
     }
 
     private void Start()
     {
-
-        Time.timeScale = 1;
-
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-        playerColl = GetComponent<CapsuleCollider2D>();
+        coll = GetComponent<CapsuleCollider2D>();
         sprite = GetComponent<SpriteRenderer>();
         groundMask = LayerMask.GetMask("Platform", "AirPlatform");
 
+        Time.timeScale = 1;
         InIt();
     }
 
@@ -67,16 +66,19 @@ public class PlayerCtrl : MonoBehaviour
         // HandleInput();
         // UpdateAnimState();
         LimitMove();
+        InGameUI.instance.UpdateHeart();
     }
 
     public void InIt()
     {
+        if (SceneManager.GetActiveScene().name == "BossScene")           
+            transform.position = new Vector2(0, -3);
+        else
+            transform.position = Vector2.zero;
+
         isDie = false;
         currentHp = maxHp;
         score = 0;
-        transform.position = new Vector2(-3, -3);
-        sprite.color = new Color(1, 1, 1, 1);
-        sprite.flipX = false;
 
         state = MovementState.idle;
         anim.ResetTrigger("Die");
@@ -193,15 +195,15 @@ public class PlayerCtrl : MonoBehaviour
 
     private void LimitMove()
     {
-        if (transform.position.x <= -10.5f)
+        if (transform.position.x <= -10f)
         {
-            transform.position = new Vector2(-10.5f, transform.position.y);
+            transform.position = new Vector2(-10f, transform.position.y);
         }
     }
 
     private bool IsGrounded()
     {
-        return Physics2D.BoxCast(playerColl.bounds.center, playerColl.bounds.size, 0f, Vector2.down, 0.5f, groundMask);
+        return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, 0.5f, groundMask);
     }
 
     private void OnCollisionEnter2D(Collision2D coll)
@@ -247,14 +249,12 @@ public class PlayerCtrl : MonoBehaviour
     {
         if (coll.gameObject.name.Contains("Coin"))
         {
-            InGameUI.instance.AddScore();
-            Destroy(coll.gameObject);
+            AddScore();
             SoundManager.Instance.PlayGUISound("coin", 1.0f);
+            Destroy(coll.gameObject);
         }
         else if (coll.gameObject.CompareTag("Door"))
         {
-            GameManager.Instance().gameState = GameManager.GameState.Boss;
-            PlayerPrefs.SetFloat("Hp", GlobalValue.g_Hp);
             InGameUI.instance.ChangeScene();
         }
 
@@ -265,10 +265,18 @@ public class PlayerCtrl : MonoBehaviour
 
         else if (coll.gameObject.name.Contains("Dia"))
         {
-            GameManager.Instance().gameState = GameManager.GameState.Ending;
-            Destroy(coll.gameObject);
             SoundManager.Instance.PlayGUISound("coin", 1.0f);
-            InGameUI.instance.GameEnding();
+            GameManager.Instance().GameOver();
+            Destroy(coll.gameObject);
+        }
+        else if (coll.gameObject.name.Contains("Heart"))
+        {
+            if (currentHp < 5)
+            {
+                currentHp += 1;
+            }
+            InGameUI.instance.UpdateHeart();
+            Destroy(coll.gameObject);
         }
     }
 
@@ -282,7 +290,7 @@ public class PlayerCtrl : MonoBehaviour
 
     private void OnAttack(Transform enemy)
     {
-        rb.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
+        rb.AddForce(Vector2.up * 15, ForceMode2D.Impulse);
         MonsterController mon = enemy.GetComponent<MonsterController>();
         mon.MonsterTakeDamage();
     }
@@ -314,8 +322,17 @@ public class PlayerCtrl : MonoBehaviour
         rb.velocity = Vector2.zero;
         isDie = true;
         anim.SetTrigger("Die");
-        InGameUI.instance.GameOver();
+        GameManager.Instance().GameOver();
         SoundManager.Instance.m_AudioSrc.clip = null;  //배경음 플레이 안함
+    }
+
+    public void AddScore(int value = 50)
+    {
+        if (score < 0)
+            score = 0;
+
+        score += value;
+        InGameUI.instance.scoreText.text = score.ToString();
     }
 
     private void SetLayerCollisions(bool ignore)
@@ -329,10 +346,5 @@ public class PlayerCtrl : MonoBehaviour
     {
         gameObject.layer = 6;
         sprite.color = new Color(1, 1, 1, 1);
-    }
-
-    public void SetPlayerActive(bool isActive)
-    {
-        gameObject.SetActive(isActive);
     }
 }

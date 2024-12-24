@@ -1,31 +1,34 @@
 using UnityEngine;
+using Cinemachine;
 using UnityEngine.SceneManagement;
 
 public class CamCtrl : MonoBehaviour
 {
     private Transform target;
-    public Vector2 minCameraBoundary;
-    public Vector2 maxCameraBoundary;
-    public float speed;
+    private Vector2 minCameraBoundary;
+    private Vector2 maxCameraBoundary;
     private Vector3 targetPos;
+    public float speed;
+    public CinemachineVirtualCamera vCam;
 
-    void Start()
+    private void Start()
     {
-        PlayerCtrl player = FindObjectOfType<PlayerCtrl>();
-        target = player.transform;
+        if (SceneManager.GetActiveScene().name == "BossScene")
+        {
+            vCam.gameObject.SetActive(false);
+        }
+        target = PlayerCtrl.Instance.transform;
     }
 
     private void LateUpdate()
     {
-        if (SceneManager.GetActiveScene().name == "BossScene")
-        {
-            targetPos = new Vector3(target.position.x, 0, this.transform.position.z);
-            maxCameraBoundary = new Vector2(31.3f, 0);
+        targetPos = new Vector3(target.position.x, 0, this.transform.position.z);
+        minCameraBoundary = new Vector2(0.5f, 0);
+        maxCameraBoundary = new Vector2(32.5f, 0);
 
-            if (target.position.x > 22)
-            {
-                minCameraBoundary = new Vector2(31.0f, 0);
-            }
+        if (target.position.x > 22)
+        {
+            minCameraBoundary = new Vector2(32.5f, 0);
         }
 
         targetPos.x = Mathf.Clamp(targetPos.x, minCameraBoundary.x, maxCameraBoundary.x);

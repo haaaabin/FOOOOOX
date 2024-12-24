@@ -5,11 +5,6 @@ public class GameManager : MonoBehaviour
 {
     private static GameManager instance;
 
-    [HideInInspector] public SkillType skillType = SkillType.SkCount;
-
-    public enum GameState { Level1, Boss, GameOver, Ending }
-    [HideInInspector] public GameState gameState;
-
     public static GameManager Instance()
     {
         if (instance == null)
@@ -27,8 +22,6 @@ public class GameManager : MonoBehaviour
             instance = this;
             DontDestroyOnLoad(this.gameObject);
         }
-
-        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private void Start()
@@ -44,28 +37,22 @@ public class GameManager : MonoBehaviour
         {
             SoundManager.Instance.PlayBGM("Maniac", 1.0f);
         }
-
-        gameState = GameState.Level1;
-
     }
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    public void GameOver()
     {
-        if (scene.name == "TitleScene")
+        if(PlayerCtrl.Instance.currentHp > 0)
         {
-            InGameUI.instance.SetUIActive(false);
-            PlayerCtrl.Instance.SetPlayerActive(false);
+            InGameUI.instance.titleText.text = "GAME END !";
         }
-        else
-        {
-            InGameUI.instance.SetUIActive(true);
-            PlayerCtrl.Instance.SetPlayerActive(true);
-        }
+        Time.timeScale = 0.0f;
+        InGameUI.instance.GameEndPanelUI();
     }
 
-    void OnDestroy()
+    public void ReplayGame()
     {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.LoadScene("Level1");
+        SceneManager.LoadScene("GameUIScene", LoadSceneMode.Additive);
     }
 
 }
