@@ -78,6 +78,7 @@ public class MonsterController : MonoBehaviour
                 break;
             case MonType.Attack_Monster:
                 SetInitHp(200.0f);
+                Invoke("Think", 3);
                 break;
             case MonType.Boss:
                 SetInitHp(10000.0f);
@@ -113,6 +114,15 @@ public class MonsterController : MonoBehaviour
                     break;
             }
         }
+    }
+
+    void Think()
+    {
+        turn = Random.Range(-1, 2);
+
+        // anim.SetInteger("State", turn);
+        if (turn != 0)
+            sprite.flipX = turn == 1;
     }
 
     private void SetInitHp(float hp)

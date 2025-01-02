@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class TrunkCtrl : MonoBehaviour
@@ -20,8 +18,7 @@ public class TrunkCtrl : MonoBehaviour
         sprite = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
 
-        Invoke("Think", 3);
-        
+        Invoke("Think", 3); 
     }
 
     // Update is called once per frame
@@ -48,6 +45,5 @@ public class TrunkCtrl : MonoBehaviour
         anim.SetInteger("State", turn);
         if (turn != 0)
             sprite.flipX = turn == 1;
-
     }
 }
